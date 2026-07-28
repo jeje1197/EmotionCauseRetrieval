@@ -8,8 +8,11 @@ from clients.gemini_client import GeminiClient
 from models import Profile, ProfileEvents
 from prompts.profile_event_generation_prompt import CHARACTER_PROFILE_EVENT_GENERATION_PROMPT
 
-INPUT_FILE = Path(__file__).with_name("profile_descriptions.json")
-OUTPUT_FILE = Path(__file__).with_name("profiles_with_events.json")
+ROOT_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+INPUT_FILE = DATA_DIR / "profile_descriptions.json"
+OUTPUT_FILE = DATA_DIR / "profiles_with_events.json"
 
 
 def build_prompt(description: str) -> str:

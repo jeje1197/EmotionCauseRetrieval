@@ -1,5 +1,5 @@
 CHARACTER_PROFILE_EVENT_GENERATION_PROMPT = """\
-Based on the character description provided below, generate a list of 10 events that occur in the character's life and 2 questions that can be answered by the events.
+Based on the character description provided below, generate a list of 15 events that occur in the character's life and 2 questions that can be answered by the events.
 
 Event Guidelines:
 Each event should be a 1-sentence description of an observation, action, or occurrence in the character's life.
@@ -24,10 +24,10 @@ Output Format (JSON):
 }}
 
 Important:
-- Each event should be given a unique integer ID from 1 through 10 in the order they occur.
-- There should be exactly 10 events and 2 questions in the output.
+- Each event should be given a unique integer ID from 1 through 15 in the order they occur.
+- There should be exactly 15 events and 2 questions in the output.
 - The target_event_id should reference the ID of the event that the question is based on.
-- The target_event_id should be greater than 6 to ensure that each question has at least 6 prior events to choose from as potential answers.
+- The target_event_id should be greater than 10 to ensure that each question has at least 10 prior events to choose from as potential answers.
 - The answer_event_id should reference the ID of the single prior event that best explains the behavior, action, feeling, or occurence mentioned in the question.
 - The answer_event_id should be less than the target_event_id to ensure that the answer is based on a prior event.
 - Only events with IDs less than the target_event_id should be considered as potential answer events.
