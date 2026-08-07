@@ -34,6 +34,7 @@ class ConversationTurn:
     expanded_emotion_cause_span: list[str] | None = None
     explanation: str | None = None
     type: list[str] | None = None
+    has_multiple_causes: bool = False
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> "ConversationTurn":
@@ -48,20 +49,28 @@ class ConversationTurn:
             expanded_emotion_cause_span=[str(value) for value in data.get("expanded emotion cause span", [])] if data.get("expanded emotion cause span") else None,
             explanation=str(data.get("explanation")) if data.get("explanation") is not None else None,
             type=[str(value) for value in data.get("type", [])] if data.get("type") else None,
+            has_multiple_causes=bool(data.get("has_multiple_causes", False)),
         )
 
 
 @dataclass
 class Conversation:
     conversation_id: str
+    dataset_split: str
     target_turn: int
     golden_turn: int
     turns: list[ConversationTurn]
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> "Conversation":
+        dataset_split = str(data.get("dataset_split", "")).lower()
+        if dataset_split not in {"train", "valid", "test"}:
+            raise ValueError(
+                "Conversation data must include dataset_split with value 'train', 'valid', or 'test'."
+            )
         return Conversation(
             conversation_id=str(data["conversation_id"]),
+            dataset_split=dataset_split,
             target_turn=int(data["target_turn"]),
             golden_turn=int(data["golden_turn"]),
             turns=[ConversationTurn.from_dict(turn) for turn in data.get("turns", [])],

@@ -51,7 +51,12 @@ def validate_selected_dataset(path: Path) -> None:
         if not isinstance(turns, list):
             raise ValueError("Each conversation must include a turns list.")
 
+        # Ensure the golden turn refers to a prior turn (golden < target)
         if target_turn >= 5 and golden_turn >= 0:
+            if golden_turn >= target_turn:
+                raise ValueError(
+                    f"Conversation {conversation.get('conversation_id')} has golden_turn >= target_turn ({golden_turn} >= {target_turn})."
+                )
             selected_count += 1
             target_turn_distribution[target_turn] = target_turn_distribution.get(target_turn, 0) + 1
 
@@ -66,6 +71,17 @@ def validate_selected_dataset(path: Path) -> None:
         raise ValueError("No valid selected turns found in the selected dataset.")
 
 
+def _parse_int(value: Any) -> int | None:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def select_turns_for_conversation(conversation: dict[str, Any]) -> dict[str, Any]:
     """Compute target_turn and golden_turn fields for one conversation."""
     turns = conversation.get("turns", [])
@@ -73,21 +89,37 @@ def select_turns_for_conversation(conversation: dict[str, Any]) -> dict[str, Any
     selected["target_turn"] = -1
     selected["golden_turn"] = -1
 
+    eligible_turns: list[dict[str, Any]] = []
     for turn in turns:
-        turn_index = turn.get("turn")
-        if not isinstance(turn_index, int):
+        turn_index = _parse_int(turn.get("turn"))
+        if turn_index is None:
             continue
         if turn_index < 5:
             continue
         evidence = turn.get("expanded emotion cause evidence")
         if not evidence:
             continue
+        eligible_turns.append(turn)
 
-        # Select the first eligible target turn in the conversation.
-        selected["target_turn"] = turn_index
-        if isinstance(evidence, list) and evidence:
-            selected["golden_turn"] = evidence[0]
-        break
+    single_cause_turns = [
+        turn for turn in eligible_turns
+        if isinstance(turn.get("expanded emotion cause evidence"), list)
+        and len(turn.get("expanded emotion cause evidence", [])) == 1
+    ]
+
+    preferred_turns = single_cause_turns if single_cause_turns else eligible_turns
+    if preferred_turns:
+        chosen = preferred_turns[0]
+        chosen_turn = _parse_int(chosen.get("turn"))
+        chosen_evidence = chosen.get("expanded emotion cause evidence")
+        selected["target_turn"] = chosen_turn if chosen_turn is not None else -1
+        # Pick the first evidence index that is a valid int and strictly less than the target turn
+        if isinstance(chosen_evidence, list) and chosen_evidence and chosen_turn is not None:
+            for ev in chosen_evidence:
+                golden_candidate = _parse_int(ev)
+                if golden_candidate is not None and golden_candidate < chosen_turn:
+                    selected["golden_turn"] = golden_candidate
+                    break
 
     return selected
 

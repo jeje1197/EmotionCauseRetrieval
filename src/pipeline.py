@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -26,7 +27,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the RECCON processing pipeline.")
     parser.add_argument(
         "--stage",
-        choices=["download", "format", "select", "embed", "all"],
+        choices=["download", "format", "select", "embed", "repair", "all"],
         default="all",
         help="Pipeline stage to run.",
     )
@@ -51,7 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--concurrent-requests",
         type=int,
-        default=5,
+        default=10,
         help="Maximum number of concurrent embedding requests.",
     )
     return parser.parse_args()
@@ -76,6 +77,16 @@ def main() -> None:
     if args.stage in {"embed", "all"}:
         print("Running embed stage...")
         embed_dataset(
+            max_retries=args.max_retries,
+            initial_delay=args.initial_delay,
+            backoff_factor=args.backoff_factor,
+            concurrent_requests=args.concurrent_requests,
+        )
+    if args.stage in {"repair", "all"}:
+        print("Running repair stage (retry failed embeddings)...")
+        from src.scripts.embed_dataset import repair_embeddings
+
+        repair_embeddings(
             max_retries=args.max_retries,
             initial_delay=args.initial_delay,
             backoff_factor=args.backoff_factor,

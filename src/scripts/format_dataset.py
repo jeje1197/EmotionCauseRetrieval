@@ -45,6 +45,10 @@ def validate_formatted_dataset(path: Path) -> None:
             raise ValueError("Each conversation must be a dictionary.")
         if not isinstance(conversation.get("conversation_id"), str):
             raise ValueError("Each conversation must include a string conversation_id.")
+        if conversation.get("dataset_split") not in {"train", "valid", "test"}:
+            raise ValueError(
+                "Each conversation must include a dataset_split with value 'train', 'valid', or 'test'."
+            )
         if not isinstance(conversation.get("target_turn"), int):
             raise ValueError("Each conversation must include an integer target_turn.")
         if not isinstance(conversation.get("golden_turn"), int):
@@ -61,13 +65,20 @@ def validate_formatted_dataset(path: Path) -> None:
                 raise ValueError("Each turn must include a semantic_embedding list.")
             if "vad_scores" not in turn or not isinstance(turn["vad_scores"], list):
                 raise ValueError("Each turn must include a vad_scores list.")
+            if "has_multiple_causes" not in turn or not isinstance(turn["has_multiple_causes"], bool):
+                raise ValueError("Each turn must include a has_multiple_causes boolean.")
 
 
-def normalize_conversation(conversation_id: str, conversation_list: list[list[dict[str, Any]]]) -> dict[str, Any]:
+def normalize_conversation(
+    conversation_id: str,
+    conversation_list: list[list[dict[str, Any]]],
+    dataset_split: str,
+) -> dict[str, Any]:
     """Normalize a single RECCON conversation structure into a flattened dict."""
     if not conversation_list:
         return {
             "conversation_id": conversation_id,
+            "dataset_split": dataset_split,
             "target_turn": -1,
             "golden_turn": -1,
             "turns": [],
@@ -78,12 +89,17 @@ def normalize_conversation(conversation_id: str, conversation_list: list[list[di
     normalized_turns: list[dict[str, Any]] = []
     for turn in turns:
         normalized_turn = dict(turn)
+        evidence = normalized_turn.get("expanded emotion cause evidence")
+        normalized_turn["has_multiple_causes"] = (
+            isinstance(evidence, list) and len(evidence) > 1
+        )
         normalized_turn["semantic_embedding"] = []
         normalized_turn["vad_scores"] = []
         normalized_turns.append(normalized_turn)
 
     return {
         "conversation_id": conversation_id,
+        "dataset_split": dataset_split,
         "target_turn": -1,
         "golden_turn": -1,
         "turns": normalized_turns,
@@ -95,8 +111,11 @@ def format_dataset(raw_paths: list[Path]) -> list[dict[str, Any]]:
     formatted_dataset: list[dict[str, Any]] = []
     for raw_path in raw_paths:
         raw_data = load_json(raw_path)
+        split_name = "train" if raw_path.name.endswith("train.json") else "valid" if raw_path.name.endswith("valid.json") else "test"
         for conversation_id, conversation_list in raw_data.items():
-            formatted_dataset.append(normalize_conversation(conversation_id, conversation_list))
+            formatted_dataset.append(
+                normalize_conversation(conversation_id, conversation_list, split_name)
+            )
     return formatted_dataset
 
 
