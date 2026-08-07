@@ -12,14 +12,15 @@ import math
 from pathlib import Path
 from typing import Any
 
+from src.models import Conversation, ConversationTurn
+
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT_DIR / "data"
 EMBEDDED_FILENAME = "reccon_embedded.json"
 
 
-def load_json(path: Path) -> Any:
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+def load_conversations(path: Path) -> list[Conversation]:
+    return Conversation.load_list(path)
 
 
 def vectorize_vad(vad_scores: dict[str, Any]) -> list[float]:
@@ -41,17 +42,17 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
     return dot / (norm_a * norm_b)
 
 
-def compute_semantic_similarity(target_turn: dict[str, Any], candidate_turn: dict[str, Any]) -> float:
+def compute_semantic_similarity(target_turn: ConversationTurn, candidate_turn: ConversationTurn) -> float:
     return cosine_similarity(
-        list(target_turn.get("semantic_embedding", [])),
-        list(candidate_turn.get("semantic_embedding", [])),
+        target_turn.semantic_embedding,
+        candidate_turn.semantic_embedding,
     )
 
 
-def compute_emotion_similarity(target_turn: dict[str, Any], candidate_turn: dict[str, Any]) -> float:
+def compute_emotion_similarity(target_turn: ConversationTurn, candidate_turn: ConversationTurn) -> float:
     return cosine_similarity(
-        vectorize_vad(target_turn.get("vad_scores", {})),
-        vectorize_vad(candidate_turn.get("vad_scores", {})),
+        vectorize_vad(target_turn.vad_scores.__dict__),
+        vectorize_vad(candidate_turn.vad_scores.__dict__),
     )
 
 
@@ -76,17 +77,16 @@ def compute_reranker_score(
     return a * semantic_similarity + b * emotion_similarity
 
 
-def get_valid_conversations(dataset: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    valid_conversations: list[dict[str, Any]] = []
+def get_valid_conversations(dataset: list[Conversation]) -> list[Conversation]:
+    valid_conversations: list[Conversation] = []
     for conversation in dataset:
-        target_turn = conversation.get("target_turn", -1)
-        golden_turn = conversation.get("golden_turn", -1)
-        turns = conversation.get("turns") or []
-        if target_turn < 0 or golden_turn < 0 or not turns:
+        if conversation.target_turn < 0 or conversation.golden_turn < 0:
+            continue
+        if not conversation.turns:
             continue
         if any(
-            not turn.get("semantic_embedding") or not turn.get("vad_scores")
-            for turn in turns
+            not turn.semantic_embedding or turn.vad_scores is None
+            for turn in conversation.turns
         ):
             continue
         valid_conversations.append(conversation)
@@ -94,19 +94,18 @@ def get_valid_conversations(dataset: list[dict[str, Any]]) -> list[dict[str, Any
 
 
 def rank_previous_turns(
-    conversation: dict[str, Any],
+    conversation: Conversation,
     weight_a: float,
     weight_b: float,
 ) -> list[dict[str, Any]]:
-    target_turn_index = conversation["target_turn"]
-    turns = conversation["turns"]
-    target = next((turn for turn in turns if turn.get("turn") == target_turn_index), None)
+    target_turn_index = conversation.target_turn
+    target = next((turn for turn in conversation.turns if turn.turn == target_turn_index), None)
     if target is None:
         return []
 
     prior_turns = [
-        turn for turn in turns
-        if isinstance(turn.get("turn"), int) and turn["turn"] < target_turn_index
+        turn for turn in conversation.turns
+        if isinstance(turn.turn, int) and turn.turn < target_turn_index
     ]
     ranked: list[dict[str, Any]] = []
     for candidate in prior_turns:
@@ -120,7 +119,7 @@ def rank_previous_turns(
         )
         ranked.append(
             {
-                "candidate_turn": candidate["turn"],
+                "candidate_turn": candidate.turn,
                 "semantic_similarity": semantic_similarity,
                 "emotion_similarity": emotion_similarity,
                 "reranker_score": reranker_score,
@@ -183,7 +182,7 @@ def run_experiment(
     if weight_pairs is None:
         weight_pairs = [(1.0, 0.0), (0.75, 0.25), (0.5, 0.5), (0.25, 0.75), (0.0, 1.0)]
 
-    raw_dataset = load_json(input_path)
+    raw_dataset = load_conversations(input_path)
     dataset = get_valid_conversations(raw_dataset)
     results: dict[str, dict[str, float]] = {}
 

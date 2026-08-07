@@ -27,6 +27,45 @@ def write_json(path: Path, data: Any) -> None:
         json.dump(data, handle, ensure_ascii=False, indent=2)
 
 
+def validate_selected_dataset(path: Path) -> None:
+    if not path.exists():
+        raise FileNotFoundError(f"Selected dataset file does not exist: {path}")
+
+    dataset = load_json(path)
+    if not isinstance(dataset, list):
+        raise ValueError("Selected dataset should be a list of conversations.")
+
+    selected_count = 0
+    target_turn_distribution: dict[int, int] = {}
+
+    for conversation in dataset:
+        if not isinstance(conversation, dict):
+            raise ValueError("Each conversation must be a dictionary.")
+        if not isinstance(conversation.get("conversation_id"), str):
+            raise ValueError("Each conversation must include a string conversation_id.")
+        target_turn = conversation.get("target_turn")
+        golden_turn = conversation.get("golden_turn")
+        if not isinstance(target_turn, int) or not isinstance(golden_turn, int):
+            raise ValueError("Each conversation must include integer target_turn and golden_turn values.")
+        turns = conversation.get("turns")
+        if not isinstance(turns, list):
+            raise ValueError("Each conversation must include a turns list.")
+
+        if target_turn >= 5 and golden_turn >= 0:
+            selected_count += 1
+            target_turn_distribution[target_turn] = target_turn_distribution.get(target_turn, 0) + 1
+
+    total_conversations = len(dataset)
+    print(f"Selected conversations: {selected_count}/{total_conversations}")
+    if target_turn_distribution:
+        print("Target turn distribution:")
+        for turn_value in sorted(target_turn_distribution):
+            print(f"  turn {turn_value}: {target_turn_distribution[turn_value]}")
+    else:
+        print("No eligible target turns were selected.")
+        raise ValueError("No valid selected turns found in the selected dataset.")
+
+
 def select_turns_for_conversation(conversation: dict[str, Any]) -> dict[str, Any]:
     """Compute target_turn and golden_turn fields for one conversation."""
     turns = conversation.get("turns", [])
@@ -69,6 +108,7 @@ def write_selected_dataset(
     dataset = load_json(input_path)
     selected_dataset = select_turns(dataset)
     write_json(output_path, selected_dataset)
+    validate_selected_dataset(output_path)
     return output_path
 
 

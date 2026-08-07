@@ -32,6 +32,37 @@ def write_json(path: Path, data: Any) -> None:
         json.dump(data, handle, ensure_ascii=False, indent=2)
 
 
+def validate_formatted_dataset(path: Path) -> None:
+    if not path.exists():
+        raise FileNotFoundError(f"Formatted dataset file does not exist: {path}")
+
+    data = load_json(path)
+    if not isinstance(data, list):
+        raise ValueError("Formatted dataset should be a list of conversations.")
+
+    for conversation in data:
+        if not isinstance(conversation, dict):
+            raise ValueError("Each conversation must be a dictionary.")
+        if not isinstance(conversation.get("conversation_id"), str):
+            raise ValueError("Each conversation must include a string conversation_id.")
+        if not isinstance(conversation.get("target_turn"), int):
+            raise ValueError("Each conversation must include an integer target_turn.")
+        if not isinstance(conversation.get("golden_turn"), int):
+            raise ValueError("Each conversation must include an integer golden_turn.")
+
+        turns = conversation.get("turns")
+        if not isinstance(turns, list):
+            raise ValueError("Each conversation must include a turns list.")
+
+        for turn in turns:
+            if not isinstance(turn, dict):
+                raise ValueError("Each turn must be a dictionary.")
+            if "semantic_embedding" not in turn or not isinstance(turn["semantic_embedding"], list):
+                raise ValueError("Each turn must include a semantic_embedding list.")
+            if "vad_scores" not in turn or not isinstance(turn["vad_scores"], list):
+                raise ValueError("Each turn must include a vad_scores list.")
+
+
 def normalize_conversation(conversation_id: str, conversation_list: list[list[dict[str, Any]]]) -> dict[str, Any]:
     """Normalize a single RECCON conversation structure into a flattened dict."""
     if not conversation_list:
@@ -77,6 +108,7 @@ def write_formatted_dataset(output_path: Path | None = None) -> Path:
     input_paths = [DATA_DIR / filename for filename in RAW_FILENAMES]
     formatted_dataset = format_dataset(input_paths)
     write_json(output_path, formatted_dataset)
+    validate_formatted_dataset(output_path)
     return output_path
 
 

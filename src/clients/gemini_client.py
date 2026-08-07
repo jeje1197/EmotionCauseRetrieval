@@ -1,9 +1,10 @@
 """Gemini client wrapper for structured Gemini SDK calls."""
 
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Iterable, List
 
 from google import genai
+from google.genai import types
 
 
 class GeminiClient:
@@ -33,3 +34,13 @@ class GeminiClient:
             return json.loads(output_text)
 
         return output_text
+
+    def embed_texts(self, texts: Iterable[str]) -> List[List[float]]:
+        response = self.client.models.embed_content(
+            model=self.model,
+            contents=list(texts),
+            config=types.EmbedContentConfig(task_type="SEMANTIC_SIMILARITY"),
+        )
+        if not getattr(response, "embeddings", None):
+            raise RuntimeError("Embedding request did not return embeddings.")
+        return [list(embedding.values) for embedding in response.embeddings]

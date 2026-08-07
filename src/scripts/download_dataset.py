@@ -44,11 +44,20 @@ def download_file(filename: str) -> Path:
     return local_path
 
 
+def validate_downloaded_files(paths: list[Path]) -> None:
+    """Validate that expected download files exist and are non-empty."""
+    missing = [path for path in paths if not path.exists() or path.stat().st_size == 0]
+    if missing:
+        missing_list = ", ".join(str(path) for path in missing)
+        raise FileNotFoundError(f"Missing or empty downloaded files: {missing_list}")
+
+
 def download_all_files(filenames: Iterable[str] = RECCON_FILES) -> list[Path]:
     """Download all predefined RECCON files to the data directory."""
     downloaded_paths = []
     for filename in filenames:
         downloaded_paths.append(download_file(filename))
+    validate_downloaded_files(downloaded_paths)
     return downloaded_paths
 
 

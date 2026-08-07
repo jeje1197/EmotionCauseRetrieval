@@ -48,11 +48,19 @@ def parse_args() -> argparse.Namespace:
         default=2.0,
         help="Backoff factor for exponential retry delays.",
     )
+    parser.add_argument(
+        "--concurrent-requests",
+        type=int,
+        default=5,
+        help="Maximum number of concurrent embedding requests.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    pipeline_start = time.perf_counter()
+
     if args.stage in {"download", "all"}:
         print("Running download stage...")
         download_all_files()
@@ -71,9 +79,11 @@ def main() -> None:
             max_retries=args.max_retries,
             initial_delay=args.initial_delay,
             backoff_factor=args.backoff_factor,
+            concurrent_requests=args.concurrent_requests,
         )
 
-    print("Pipeline completed.")
+    pipeline_duration = time.perf_counter() - pipeline_start
+    print(f"Pipeline completed in {pipeline_duration:.2f}s.")
 
 
 if __name__ == "__main__":
