@@ -12,8 +12,8 @@ from typing import Any
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT_DIR / "data"
-FORMATTED_FILENAME = "recccon_formatted.json"
-SELECTED_FILENAME = "recccon_selected.json"
+FORMATTED_FILENAME = "reccon_formatted.json"
+SELECTED_FILENAME = "reccon_selected.json"
 
 
 def load_json(path: Path) -> Any:

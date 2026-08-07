@@ -18,8 +18,8 @@ from src.prompts.vad_prompt import VAD_PROMPT
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT_DIR / "data"
-SELECTED_FILENAME = "recccon_selected.json"
-EMBEDDED_FILENAME = "recccon_embedded.json"
+SELECTED_FILENAME = "reccon_selected.json"
+EMBEDDED_FILENAME = "reccon_embedded.json"
 
 
 def load_json(path: Path) -> Any:

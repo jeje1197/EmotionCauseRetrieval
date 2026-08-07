@@ -18,7 +18,7 @@ RAW_FILENAMES = [
     "dailydialog_test.json",
     "dailydialog_valid.json",
 ]
-FORMATTED_FILENAME = "recccon_formatted.json"
+FORMATTED_FILENAME = "reccon_formatted.json"
 
 
 def load_json(path: Path) -> Any:
