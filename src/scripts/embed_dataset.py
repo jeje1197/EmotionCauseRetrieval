@@ -15,139 +15,21 @@ from pathlib import Path
 from typing import Any
 
 from src.clients.gemini_client import GeminiClient
-from src.prompts.vad_prompt import VAD_PROMPT
-
-ROOT_DIR = Path(__file__).resolve().parents[2]
-DATA_DIR = ROOT_DIR / "data"
-SELECTED_FILENAME = "reccon_selected.json"
-EMBEDDED_FILENAME = "reccon_embedded.json"
-
-
-def load_json(path: Path) -> Any:
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
-def write_json(path: Path, data: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, ensure_ascii=False, indent=2)
-
-
-def retry_call(
-    func,
-    max_retries: int = 5,
-    initial_delay: float = 1.0,
-    backoff_factor: float = 2.0,
-    *args,
-    **kwargs,
-) -> Any:
-    """Call a function with retry and exponential backoff on exceptions."""
-    attempt = 0
-    while True:
-        try:
-            return func(*args, **kwargs)
-        except Exception as exc:
-            attempt += 1
-            if attempt > max_retries:
-                raise
-            sleep_time = initial_delay * (backoff_factor**(attempt - 1))
-            time.sleep(sleep_time)
-
-
-def validate_embedding(embedding: Any) -> list[float]:
-    if not isinstance(embedding, list) or not embedding:
-        raise ValueError("Embedding response is invalid or empty.")
-    validated_embedding: list[float] = []
-    for value in embedding:
-        if not isinstance(value, (int, float)):
-            raise ValueError("Embedding values must be numeric.")
-        validated_embedding.append(float(value))
-    return validated_embedding
-
-
-def validate_vad_scores(vad_scores: Any) -> dict[str, float]:
-    if not isinstance(vad_scores, dict):
-        raise ValueError("VAD response must be a dictionary.")
-    for key in ("valence", "arousal", "dominance"):
-        if key not in vad_scores:
-            raise ValueError(f"VAD response missing key: {key}")
-        value = vad_scores[key]
-        if not isinstance(value, (int, float)):
-            raise ValueError(f"VAD value for {key} must be numeric.")
-        if value < -1.0 or value > 1.0:
-            raise ValueError(f"VAD value for {key} must be between -1 and 1.")
-    return {key: float(vad_scores[key]) for key in ("valence", "arousal", "dominance")}
-
-
-def create_embedding(client: GeminiClient, text: str) -> list[float]:
-    """Create a semantic embedding for text using Gemini embeddings."""
-    embeddings = client.embed_texts([text])
-    if not embeddings:
-        raise RuntimeError("Embedding request did not return a vector.")
-    return validate_embedding(embeddings[0])
-
-
-def _parse_int(value: Any) -> int | None:
-    if isinstance(value, int):
-        return value
-    if isinstance(value, str) and value.isdigit():
-        return int(value)
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def score_vad(client: GeminiClient, text: str) -> dict[str, float]:
-    """Generate VAD scores for an utterance using Gemini structured JSON completion."""
-    schema = {
-        "type": "object",
-        "properties": {
-            "valence": {"type": "number"},
-            "arousal": {"type": "number"},
-            "dominance": {"type": "number"},
-        },
-        "required": ["valence", "arousal", "dominance"],
-    }
-    result = client.generate_structured_json(VAD_PROMPT.format(user_query=text), schema)
-    return validate_vad_scores({key: float(value) for key, value in result.items()})
-
-
-def count_embeddings(dataset: list[dict[str, Any]]) -> tuple[int, int, int]:
-    total_turns = 0
-    semantic_success = 0
-    vad_success = 0
-    for conversation in dataset:
-        for turn in conversation.get("turns", []):
-            total_turns += 1
-            if turn.get("semantic_embedding"):
-                semantic_success += 1
-            if turn.get("vad_scores"):
-                vad_success += 1
-    return total_turns, semantic_success, vad_success
-
-
-def validate_embedded_dataset(path: Path) -> None:
-    if not path.exists():
-        raise FileNotFoundError(f"Embedded dataset file does not exist: {path}")
-    dataset = load_json(path)
-    if not isinstance(dataset, list):
-        raise ValueError("Embedded dataset should be a list of conversations.")
-
-    for conversation in dataset:
-        if not isinstance(conversation, dict):
-            raise ValueError("Each conversation must be a dictionary.")
-        turns = conversation.get("turns")
-        if not isinstance(turns, list):
-            raise ValueError("Each conversation must include a turns list.")
-        for turn in turns:
-            if not isinstance(turn, dict):
-                raise ValueError("Each turn must be a dictionary.")
-            if not turn.get("semantic_embedding"):
-                raise ValueError("Each turn must include a non-empty semantic_embedding.")
-            if not turn.get("vad_scores"):
-                raise ValueError("Each turn must include non-empty vad_scores.")
+from src.scripts.embed_dataset_helpers import (
+    DATA_DIR,
+    SELECTED_FILENAME,
+    EMBEDDED_FILENAME,
+    load_json,
+    write_json,
+    retry_call,
+    validate_embedding,
+    validate_vad_scores,
+    create_embedding,
+    _parse_int,
+    score_vad,
+    count_embeddings,
+    validate_embedded_dataset,
+)
 
 
 def _embed_chunk(
@@ -290,83 +172,119 @@ def embed_dataset(
 
     failed_tasks: list[dict[str, Any]] = []
     if tasks:
-        total_tasks = len(tasks)
-        print(f"Submitting {total_tasks} embedding tasks (max_workers={concurrent_requests})")
+        # We'll process one conversation at a time and use batch APIs per conversation when possible.
+        total_conversations = len({conv_idx for conv_idx, _, _ in tasks})
+        print(f"Processing {total_conversations} conversations for embedding (one-at-a-time batching).")
 
-        # Chunk tasks into batches for lightweight batching of embeddings
-        batch_size = 16
-        chunks: list[list[tuple[int, int, dict[str, Any]]]] = [
-            tasks[i : i + batch_size] for i in range(0, len(tasks), batch_size)
-        ]
+        # Group tasks by conversation
+        conv_map: dict[int, list[tuple[int, dict[str, Any]]]] = {}
+        for conv_idx, turn_idx, turn in tasks:
+            conv_map.setdefault(conv_idx, []).append((turn_idx, turn))
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_requests) as executor:
-            future_to_chunk = {
-                executor.submit(
-                    _embed_chunk,
-                    chunk,
-                    max_retries,
-                    initial_delay,
-                    backoff_factor,
-                ): chunk
-                for chunk in chunks
-            }
+        completed = 0
+        for conv_idx, turns_list in conv_map.items():
+            # Respect concurrency by processing conversations sequentially here (per-user request)
+            conv = dataset[conv_idx]
+            conv_id = conv.get("conversation_id", str(conv_idx))
+            target_turn = _parse_int(conv.get("target_turn"))
 
-            completed = 0
-            for future in concurrent.futures.as_completed(future_to_chunk):
-                chunk = future_to_chunk[future]
+            # Prepare lists for embeddings and VAD
+            embed_texts = []
+            embed_positions = []
+            vad_texts = []
+            vad_positions = []
+            for turn_idx, turn in turns_list:
+                if not turn.get("semantic_embedding"):
+                    embed_texts.append(str(turn.get("utterance", "")))
+                    embed_positions.append(turn_idx)
+                if not turn.get("vad_scores"):
+                    vad_texts.append(str(turn.get("utterance", "")))
+                    vad_positions.append(turn_idx)
+
+            client = GeminiClient()
+
+            # Use inline embedding calls (avoid batch API complexity here)
+            embedding_results = None
+            if embed_texts:
+                semantic_calls += 1
+                embed_start = time.perf_counter()
                 try:
-                    results = future.result()
-                except Exception as exc:
-                    # Entire chunk failed unexpectedly; mark all turns as failed
-                    err_msg = str(exc)
-                    for conv_idx, turn_idx, _ in chunk:
-                        turn = dataset[conv_idx]["turns"][turn_idx]
-                        turn["_embedding_error"] = err_msg
-                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err_msg})
-                        completed += 1
-                        print(f"Chunk failed: conv={conv_idx} turn={turn_idx} error={err_msg}")
-                    continue
-
-                # Process per-turn results from chunk
-                for item in results:
-                    conv_idx = item["conversation_index"]
-                    turn_idx = item["turn_index"]
-                    updated_turn = item["updated_turn"]
-                    semantic_duration = item["semantic_duration"]
-                    vad_duration = item["vad_duration"]
-                    error = item.get("error")
-
-                    if error:
-                        turn = dataset[conv_idx]["turns"][turn_idx]
-                        turn["_embedding_error"] = error
-                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": error})
-                        completed += 1
-                        print(f"Failed task {completed}/{total_tasks}: conv={conv_idx} turn={turn_idx} error={error}")
-                        continue
-
-                    # Success
-                    dataset[conv_idx]["turns"][turn_idx] = updated_turn
-                    dataset[conv_idx]["turns"][turn_idx].pop("_embedding_error", None)
-                    semantic_duration_total += semantic_duration
-                    vad_duration_total += vad_duration
-                    if semantic_duration > 0:
-                        semantic_calls += 1
-                    if vad_duration > 0:
-                        vad_calls += 1
-                    completed += 1
-                    semantic_flag = semantic_duration > 0
-                    vad_flag = vad_duration > 0
+                    embedding_results = client.embed_texts(embed_texts)
+                    embedding_time = time.perf_counter() - embed_start
+                    semantic_duration_total += embedding_time
                     print(
-                        f"Completed task {completed}/{total_tasks}: conv={conv_idx} turn={turn_idx} "
-                        f"(semantic_call={semantic_flag}, vad_call={vad_flag}) "
-                        f"durations: semantic={semantic_duration:.2f}s vad={vad_duration:.2f}s"
+                        f"Inline embeddings completed for conversation {conv_id} ({len(embed_texts)} vectors) "
+                        f"in {embedding_time:.2f}s"
                     )
+                except Exception as exc:
+                    embedding_time = time.perf_counter() - embed_start
+                    semantic_duration_total += embedding_time
+                    err = str(exc)
+                    for turn_idx in embed_positions:
+                        turn = dataset[conv_idx]["turns"][turn_idx]
+                        turn["_embedding_error"] = err
+                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+                    embedding_results = None
 
-                # Periodic progress update
-                if completed % 50 == 0 or completed == total_tasks:
-                    print(f"Embedding progress: {completed}/{total_tasks} tasks finished")
+            # Assign embedding results back
+            if embedding_results:
+                # embedding_results may be a list of vectors or a nested structure; try to normalize
+                flat_embs = []
+                if isinstance(embedding_results, list) and embedding_results and isinstance(embedding_results[0], list):
+                    flat_embs = embedding_results
+                else:
+                    # attempt to coerce
+                    try:
+                        flat_embs = [list(item) for item in embedding_results]
+                    except Exception:
+                        flat_embs = []
 
-            print("All embedding tasks finished (some may have failed).")
+                for pos, turn_idx in enumerate(embed_positions):
+                    if pos < len(flat_embs):
+                        dataset[conv_idx]["turns"][turn_idx]["semantic_embedding"] = flat_embs[pos]
+                        dataset[conv_idx]["turns"][turn_idx].pop("_embedding_error", None)
+                        print(f"Assigned embedding for conv={conv_id} turn={turn_idx}")
+                    else:
+                        err = "Missing embedding result"
+                        turn = dataset[conv_idx]["turns"][turn_idx]
+                        turn["_embedding_error"] = err
+                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+
+            # Now VAD batch: attempt batch generation using interactions via batch API; fallback to per-turn structured call
+            vad_results = []
+            for text in vad_texts:
+                vad_calls += 1
+                vad_start = time.perf_counter()
+                try:
+                    vad_res = score_vad(client, text)
+                    vad_duration_total += time.perf_counter() - vad_start
+                    vad_results.append(vad_res)
+                except Exception as exc:
+                    vad_duration_total += time.perf_counter() - vad_start
+                    vad_results.append({"error": str(exc)})
+
+            # Assign VAD results back
+            if vad_results:
+                for pos, turn_idx in enumerate(vad_positions):
+                    if pos < len(vad_results):
+                        res = vad_results[pos]
+                        if isinstance(res, dict) and "error" in res:
+                            dataset[conv_idx]["turns"][turn_idx]["_embedding_error"] = res["error"]
+                            failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": res["error"]})
+                        else:
+                            dataset[conv_idx]["turns"][turn_idx]["vad_scores"] = res
+                            dataset[conv_idx]["turns"][turn_idx].pop("_embedding_error", None)
+                            print(f"Assigned VAD for conv={conv_id} turn={turn_idx}")
+                    else:
+                        err = "Missing VAD result"
+                        turn = dataset[conv_idx]["turns"][turn_idx]
+                        turn["_embedding_error"] = err
+                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+
+            completed += 1
+            print(f"Finished conversation {conv_id} ({completed}/{total_conversations})")
+
+        print("All conversations processed.")
 
     # Summary of failures
     if failed_tasks:
@@ -382,10 +300,12 @@ def embed_dataset(
         f"Embedding summary: {semantic_success}/{total_turns} semantic embeddings, "
         f"{vad_success}/{total_turns} VAD scores."
     )
+    semantic_avg = semantic_duration_total / semantic_calls if semantic_calls else 0.0
+    vad_avg = vad_duration_total / vad_calls if vad_calls else 0.0
     print(
         f"Embedding stage duration: {stage_duration:.2f}s | "
-        f"semantic calls: {semantic_calls}, avg {semantic_duration_total / semantic_calls:.2f}s if >0 else 0, "
-        f"vad calls: {vad_calls}, avg {vad_duration_total / vad_calls:.2f}s if >0 else 0"
+        f"semantic calls: {semantic_calls}, avg {semantic_avg:.2f}s, "
+        f"vad calls: {vad_calls}, avg {vad_avg:.2f}s"
     )
 
     return output_path
