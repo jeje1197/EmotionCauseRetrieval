@@ -105,6 +105,7 @@ def _embed_chunk(
             # semantic_embedding already set above if needed
             if needs_semantic_embedding(turn):
                 start_time = time.perf_counter()
+                semantic_calls += 1
                 turn["semantic_embedding"] = retry_call(
                     create_embedding,
                     max_retries=max_retries,
@@ -118,6 +119,7 @@ def _embed_chunk(
 
             if needs_vad_scores(turn):
                 start_time = time.perf_counter()
+                vad_calls += 1
                 turn["vad_scores"] = retry_call(
                     score_vad,
                     max_retries=max_retries,
@@ -148,6 +150,42 @@ def _embed_chunk(
     return results
 
 
+def _default_output_path(input_path: Path | None, split_name: str | None = None, *, only_semantic: bool = False, vad_only: bool = False) -> Path:
+    if input_path is None:
+        if vad_only:
+            return DATA_DIR / "reccon_vad_embedded.json"
+        if only_semantic:
+            return DATA_DIR / "reccon_embedded_semantic.json"
+        return DATA_DIR / EMBEDDED_FILENAME
+
+    input_path = Path(str(input_path).strip())
+    stem = input_path.stem
+    if stem.startswith("reccon_formatted") or stem.startswith("reccon_selected"):
+        base_name = "reccon"
+    else:
+        base_name = stem
+
+    if split_name:
+        if base_name.endswith(f"_{split_name}"):
+            output_stem = base_name
+        else:
+            output_stem = f"{base_name}_{split_name}"
+    elif base_name.endswith(("_train", "_valid", "_test")):
+        output_stem = base_name
+    else:
+        output_stem = base_name
+
+    if vad_only:
+        embedded_label = "embedded"
+    elif only_semantic:
+        embedded_label = "embedded_semantic"
+    else:
+        embedded_label = "embedded"
+
+    output_name = f"{output_stem}_{embedded_label}.json"
+    return input_path.with_name(output_name)
+
+
 def embed_dataset(
     input_path: Path | None = None,
     output_path: Path | None = None,
@@ -156,17 +194,24 @@ def embed_dataset(
     backoff_factor: float = 2.0,
     concurrent_requests: int = 10,
     embedding_batch_size: int = 20,
-    checkpoint_interval: int = 10,
+    checkpoint_interval: int = 50,
     splits: list[str] | None = ("train",),
     overwrite_vad: bool = False,
     overwrite_semantic: bool = False,
     only_semantic: bool = False,
+    vad_only: bool = False,
+    vad_max_concurrency: int = 4,
 ) -> Path:
     """Embed selected dataset turns and write the result to a JSON file."""
+    if input_path is not None:
+        input_path = Path(str(input_path).strip())
+    if output_path is not None:
+        output_path = Path(str(output_path).strip())
+
     if input_path is None:
         input_path = DATA_DIR / SELECTED_FILENAME
     if output_path is None:
-        output_path = DATA_DIR / EMBEDDED_FILENAME
+        output_path = _default_output_path(input_path, only_semantic=only_semantic, vad_only=vad_only)
 
     dataset = load_json(input_path)
     tasks: list[tuple[int, int, dict[str, Any]]] = []
@@ -195,7 +240,10 @@ def embed_dataset(
             if overwrite_semantic and turn_num is not None and target_turn is not None and turn_num <= target_turn:
                 turn["_force_semantic"] = True
 
-            if only_semantic:
+            if vad_only:
+                if needs_vad_scores(turn):
+                    tasks.append((conversation_index, turn_index, turn))
+            elif only_semantic:
                 if needs_semantic_embedding(turn):
                     tasks.append((conversation_index, turn_index, turn))
             else:
@@ -212,7 +260,7 @@ def embed_dataset(
     if tasks:
         # We'll process one conversation at a time and use batch APIs per conversation when possible.
         total_conversations = len({conv_idx for conv_idx, _, _ in tasks})
-        mode = "semantic-only" if only_semantic else "semantic+VAD"
+        mode = "VAD-only" if vad_only else "semantic-only" if only_semantic else "semantic+VAD"
         print(f"Processing {total_conversations} conversations for embedding (splits={splits}) mode={mode} (one-at-a-time batching).")
 
         # Group tasks by conversation
@@ -231,27 +279,35 @@ def embed_dataset(
             vad_texts: list[str] = []
             vad_positions: list[int] = []
             for turn_idx, turn in turns_list:
-                if needs_semantic_embedding(turn):
+                if not vad_only and needs_semantic_embedding(turn):
                     embed_texts.append(str(turn.get("utterance", "")))
                     embed_positions.append(turn_idx)
                 # Only collect VAD texts when not running in semantic-only mode
-                if not only_semantic and needs_vad_scores(turn):
-                    vad_texts.append(str(turn.get("utterance", "")))
-                    vad_positions.append(turn_idx)
+                if (not only_semantic and not vad_only) or vad_only:
+                    if needs_vad_scores(turn):
+                        vad_texts.append(str(turn.get("utterance", "")))
+                        vad_positions.append(turn_idx)
 
             client = GeminiClient()
             local_failed: list[dict[str, Any]] = []
 
             embedding_results: list[list[float]] = []
-            if embed_texts:
+            if not vad_only and embed_texts:
                 total_embeds = len(embed_texts)
                 for batch_start in range(0, total_embeds, embedding_batch_size):
                     batch_texts = embed_texts[batch_start : batch_start + embedding_batch_size]
                     batch_positions = embed_positions[batch_start : batch_start + embedding_batch_size]
                     embed_start = time.perf_counter()
                     try:
-                        batch_results = client.embed_texts(batch_texts)
+                        batch_results = retry_call(
+                            client.embed_texts,
+                            max_retries=max_retries,
+                            initial_delay=initial_delay,
+                            backoff_factor=backoff_factor,
+                            texts=batch_texts,
+                        )
                         embedding_time = time.perf_counter() - embed_start
+                        semantic_calls += 1
                         print(
                             f"Inline embeddings completed for conversation {conv_id} batch {batch_start // embedding_batch_size + 1} "
                             f"({len(batch_texts)} vectors) in {embedding_time:.2f}s"
@@ -265,13 +321,18 @@ def embed_dataset(
                             local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
                         continue
 
-                    if isinstance(batch_results, list) and batch_results and isinstance(batch_results[0], list):
-                        flat_batch_embs = batch_results
-                    else:
-                        try:
-                            flat_batch_embs = [list(item) for item in batch_results]
-                        except Exception:
-                            flat_batch_embs = []
+                    try:
+                        if isinstance(batch_results, list) and batch_results and isinstance(batch_results[0], list):
+                            flat_batch_embs = [validate_embedding(item) for item in batch_results]
+                        else:
+                            flat_batch_embs = [validate_embedding(list(item)) for item in batch_results]
+                    except Exception as exc:
+                        err = str(exc)
+                        for turn_idx in batch_positions:
+                            turn = dataset[conv_idx]["turns"][turn_idx]
+                            turn["_embedding_error"] = err
+                            local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+                        continue
 
                     for pos, turn_idx in enumerate(batch_positions):
                         if pos < len(flat_batch_embs):
@@ -284,35 +345,57 @@ def embed_dataset(
                             turn["_embedding_error"] = err
                             local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
 
-            # Compute VAD only when not in semantic-only mode
-            if not only_semantic:
-                vad_results: list[dict[str, float] | dict[str, str]] = []
-                for text in vad_texts:
+            # Compute VAD for VAD-only runs and for semantic+VAD runs.
+            if vad_texts:
+                def _score_vad_with_retry(text: str) -> dict[str, float] | dict[str, str]:
+                    nonlocal vad_duration_total, vad_calls
                     vad_start = time.perf_counter()
                     try:
-                        vad_res = score_vad(client, text)
+                        vad_calls += 1
+                        vad_res = retry_call(
+                            score_vad,
+                            max_retries=max_retries,
+                            initial_delay=initial_delay,
+                            backoff_factor=backoff_factor,
+                            client=client,
+                            text=text,
+                        )
                         vad_duration_total += time.perf_counter() - vad_start
-                        vad_results.append(vad_res)
+                        return vad_res
                     except Exception as exc:
                         vad_duration_total += time.perf_counter() - vad_start
-                        vad_results.append({"error": str(exc)})
+                        return {"error": str(exc)}
 
-                if vad_results:
-                    for pos, turn_idx in enumerate(vad_positions):
-                        if pos < len(vad_results):
-                            res = vad_results[pos]
-                            if isinstance(res, dict) and "error" in res:
-                                dataset[conv_idx]["turns"][turn_idx]["_embedding_error"] = res["error"]
-                                local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": res["error"]})
-                            else:
-                                dataset[conv_idx]["turns"][turn_idx]["vad_scores"] = res
-                                dataset[conv_idx]["turns"][turn_idx].pop("_embedding_error", None)
-                                print(f"Assigned VAD for conv={conv_id} turn={turn_idx}")
+                vad_results: list[dict[str, float] | dict[str, str]] = []
+                with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(vad_texts), vad_max_concurrency)) as vad_executor:
+                    future_to_index = {
+                        vad_executor.submit(_score_vad_with_retry, text): idx
+                        for idx, text in enumerate(vad_texts)
+                    }
+                    completed_results: dict[int, dict[str, float] | dict[str, str]] = {}
+                    for future in concurrent.futures.as_completed(future_to_index):
+                        idx = future_to_index[future]
+                        try:
+                            completed_results[idx] = future.result()
+                        except Exception as exc:
+                            completed_results[idx] = {"error": str(exc)}
+                vad_results = [completed_results[idx] for idx in range(len(vad_texts))]
+
+                for pos, turn_idx in enumerate(vad_positions):
+                    if pos < len(vad_results):
+                        res = vad_results[pos]
+                        if isinstance(res, dict) and "error" in res:
+                            dataset[conv_idx]["turns"][turn_idx]["_embedding_error"] = res["error"]
+                            local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": res["error"]})
                         else:
-                            err = "Missing VAD result"
-                            turn = dataset[conv_idx]["turns"][turn_idx]
-                            turn["_embedding_error"] = err
-                            local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+                            dataset[conv_idx]["turns"][turn_idx]["vad_scores"] = res
+                            dataset[conv_idx]["turns"][turn_idx].pop("_embedding_error", None)
+                            print(f"Assigned VAD for conv={conv_id} turn={turn_idx}")
+                    else:
+                        err = "Missing VAD result"
+                        turn = dataset[conv_idx]["turns"][turn_idx]
+                        turn["_embedding_error"] = err
+                        local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
 
             return local_failed
 
@@ -343,10 +426,12 @@ def embed_dataset(
 
         print("All conversations processed.")
 
-    # Summary of failures
-    if failed_tasks:
-        print(f"Embedding completed with {len(failed_tasks)} failed tasks. \n" +
+    failed_count = len(failed_tasks)
+    if failed_count:
+        print(f"Embedding completed with {failed_count} failed tasks. \n" +
               "Failed turns are annotated with the '_embedding_error' field in the output JSON.")
+    else:
+        print("Embedding completed with no failed tasks.")
 
     stage_duration = time.perf_counter() - stage_start
     total_turns, semantic_success, vad_success = count_embeddings(dataset)
@@ -359,9 +444,9 @@ def embed_dataset(
             if "_force_semantic" in turn:
                 turn.pop("_force_semantic", None)
 
-    # If only_semantic is set, skip full validation because VAD scores will be
-    # filled in later. Otherwise, validate that both embeddings and VAD exist.
-    if not only_semantic:
+    # Skip full validation for VAD-only and semantic-only runs because those
+    # workflows do not require the full semantic+VAD dataset contract.
+    if not only_semantic and not vad_only:
         validate_embedded_dataset(output_path)
 
     print(
@@ -478,11 +563,12 @@ def main() -> None:
     parser.add_argument("--output", dest="output_path", help="Output embedded dataset JSON", default=None)
     parser.add_argument("--concurrent-requests", dest="concurrent_requests", type=int, default=10)
     parser.add_argument("--embedding-batch-size", dest="embedding_batch_size", type=int, default=20, help="Batch size for semantic embedding requests per conversation.")
+    parser.add_argument("--max-retries", dest="max_retries", type=int, default=5, help="Maximum retry attempts for API calls.")
     parser.add_argument(
         "--checkpoint-interval",
         dest="checkpoint_interval",
         type=int,
-        default=10,
+        default=50,
         help="Write intermediate output after every N completed conversation batches (0 to disable).",
     )
     parser.add_argument(
@@ -504,23 +590,82 @@ def main() -> None:
         action="store_true",
         help="Only compute semantic embeddings; skip VAD scoring and final validation.",
     )
+    parser.add_argument(
+        "--split-output",
+        dest="split_output",
+        action="store_true",
+        help="Produce separate output files per split, e.g. reccon_embedded_train.json.",
+    )
+    parser.add_argument(
+        "--vad-only",
+        dest="vad_only",
+        action="store_true",
+        help="Only compute VAD scores and skip semantic embeddings for eligible turns.",
+    )
+    parser.add_argument(
+        "--vad-max-concurrency",
+        dest="vad_max_concurrency",
+        type=int,
+        default=4,
+        help="Maximum number of concurrent VAD scoring requests per conversation.",
+    )
 
     args = parser.parse_args()
     split_arg = args.splits if args.splits != "" else None
     split_list = None if split_arg is None else [s.strip() for s in split_arg.split(",") if s.strip()]
 
-    output_path = embed_dataset(
-        input_path=Path(args.input_path) if args.input_path else None,
-        output_path=Path(args.output_path) if args.output_path else None,
-        concurrent_requests=args.concurrent_requests,
-        embedding_batch_size=args.embedding_batch_size,
-        checkpoint_interval=args.checkpoint_interval,
-        splits=split_list,
-        overwrite_vad=args.overwrite_vad,
-        overwrite_semantic=args.overwrite_semantic,
-        only_semantic=args.only_semantic,
-    )
-    print(f"Embedded dataset written to: {output_path}")
+    if args.split_output:
+        split_list = split_list or ["train", "valid", "test"]
+        base_output_path = Path(args.output_path) if args.output_path else None
+        output_paths: list[Path] = []
+        for split in split_list:
+            if base_output_path is not None:
+                split_output_path = base_output_path.with_name(f"{base_output_path.stem}_{split}{base_output_path.suffix}")
+            else:
+                split_output_path = _default_output_path(
+                    input_path=Path(args.input_path) if args.input_path else None,
+                    split_name=split,
+                    only_semantic=args.only_semantic,
+                    vad_only=args.vad_only,
+                )
+                if base_output_path is not None:
+                    split_output_path = base_output_path.with_name(
+                        f"{base_output_path.stem}_{split}{base_output_path.suffix}"
+                    )
+
+            output_paths.append(
+                embed_dataset(
+                    input_path=Path(args.input_path) if args.input_path else None,
+                    output_path=split_output_path,
+                    max_retries=args.max_retries,
+                    concurrent_requests=args.concurrent_requests,
+                    embedding_batch_size=args.embedding_batch_size,
+                    checkpoint_interval=args.checkpoint_interval,
+                    splits=[split],
+                    overwrite_vad=args.overwrite_vad,
+                    overwrite_semantic=args.overwrite_semantic,
+                    only_semantic=args.only_semantic,
+                    vad_only=args.vad_only,
+                    vad_max_concurrency=args.vad_max_concurrency,
+                )
+            )
+        print(f"Embedded split datasets written to: {', '.join(str(p) for p in output_paths)}")
+    else:
+        output_path = embed_dataset(
+            input_path=Path(args.input_path) if args.input_path else None,
+            output_path=Path(args.output_path) if args.output_path else None,
+            max_retries=args.max_retries,
+            concurrent_requests=args.concurrent_requests,
+            embedding_batch_size=args.embedding_batch_size,
+            checkpoint_interval=args.checkpoint_interval,
+            splits=split_list,
+            overwrite_vad=args.overwrite_vad,
+            overwrite_semantic=args.overwrite_semantic,
+            only_semantic=args.only_semantic,
+            vad_only=args.vad_only,
+            vad_max_concurrency=args.vad_max_concurrency,
+        )
+        print(f"Embedded dataset written to: {output_path}")
 
 
 if __name__ == "__main__":

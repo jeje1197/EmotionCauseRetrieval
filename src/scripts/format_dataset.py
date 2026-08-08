@@ -131,9 +131,67 @@ def write_formatted_dataset(output_path: Path | None = None) -> Path:
     return output_path
 
 
+def write_split_dataset_files(input_path: Path | None = None, output_dir: Path | None = None) -> list[Path]:
+    """Write train/valid/test split JSON files from a formatted or selected dataset."""
+    if input_path is None:
+        input_path = DATA_DIR / FORMATTED_FILENAME
+    if output_dir is None:
+        output_dir = DATA_DIR
+
+    input_path = Path(str(input_path).strip())
+    output_dir = Path(str(output_dir).strip())
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    dataset = load_json(input_path)
+    if not isinstance(dataset, list):
+        raise ValueError("Input dataset must be a list of conversations.")
+
+    split_names = ["train", "valid", "test"]
+    written_paths: list[Path] = []
+    for split_name in split_names:
+        split_dataset = [
+            conversation
+            for conversation in dataset
+            if str(conversation.get("dataset_split") or conversation.get("split") or "").lower() == split_name
+        ]
+        output_path = output_dir / f"{input_path.stem}_{split_name}.json"
+        write_json(output_path, split_dataset)
+        written_paths.append(output_path)
+
+    return written_paths
+
+
 def main() -> None:
-    output_path = write_formatted_dataset()
-    print(f"Formatted dataset written to: {output_path}")
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Format RECCON data and optionally write split files.")
+    parser.add_argument("--input", dest="input_path", help="Input dataset JSON file", default=None)
+    parser.add_argument("--output", dest="output_path", help="Output formatted dataset JSON file", default=None)
+    parser.add_argument(
+        "--write-splits",
+        dest="write_splits",
+        action="store_true",
+        help="Write train/valid/test split files from the input dataset.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        dest="output_dir",
+        help="Directory for split dataset files",
+        default=None,
+    )
+    args = parser.parse_args()
+
+    if args.write_splits:
+        output_paths = write_split_dataset_files(
+            input_path=Path(args.input_path) if args.input_path else None,
+            output_dir=Path(args.output_dir) if args.output_dir else None,
+        )
+        print("Split dataset files written to:")
+        for path in output_paths:
+            print(f"  - {path}")
+    else:
+        output_path = write_formatted_dataset(Path(args.output_path) if args.output_path else None)
+        print(f"Formatted dataset written to: {output_path}")
 
 
 if __name__ == "__main__":

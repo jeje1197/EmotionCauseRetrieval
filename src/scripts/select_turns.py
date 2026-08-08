@@ -10,6 +10,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.scripts.format_dataset import write_split_dataset_files
+
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT_DIR / "data"
 FORMATTED_FILENAME = "reccon_formatted.json"
@@ -144,9 +146,52 @@ def write_selected_dataset(
     return output_path
 
 
+def write_selected_split_dataset_files(
+    selected_input_path: Path | None = None,
+    output_dir: Path | None = None,
+) -> list[Path]:
+    if selected_input_path is None:
+        selected_input_path = DATA_DIR / SELECTED_FILENAME
+    if output_dir is None:
+        output_dir = DATA_DIR
+
+    return write_split_dataset_files(input_path=selected_input_path, output_dir=output_dir)
+
+
 def main() -> None:
-    output_path = write_selected_dataset()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Select turns and optionally write split files.")
+    parser.add_argument("--input", dest="input_path", help="Input formatted dataset JSON", default=None)
+    parser.add_argument("--output", dest="output_path", help="Output selected dataset JSON", default=None)
+    parser.add_argument(
+        "--write-splits",
+        dest="write_splits",
+        action="store_true",
+        help="Write train/valid/test split files from the selected dataset.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        dest="output_dir",
+        help="Directory for split dataset files",
+        default=None,
+    )
+    args = parser.parse_args()
+
+    output_path = write_selected_dataset(
+        input_path=Path(args.input_path) if args.input_path else None,
+        output_path=Path(args.output_path) if args.output_path else None,
+    )
     print(f"Selected dataset written to: {output_path}")
+
+    if args.write_splits:
+        split_paths = write_selected_split_dataset_files(
+            selected_input_path=Path(args.output_path) if args.output_path else output_path,
+            output_dir=Path(args.output_dir) if args.output_dir else None,
+        )
+        print("Split dataset files written to:")
+        for split_path in split_paths:
+            print(f"  - {split_path}")
 
 
 if __name__ == "__main__":
