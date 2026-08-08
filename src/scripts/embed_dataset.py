@@ -181,18 +181,16 @@ def embed_dataset(
         for conv_idx, turn_idx, turn in tasks:
             conv_map.setdefault(conv_idx, []).append((turn_idx, turn))
 
-        completed = 0
-        for conv_idx, turns_list in conv_map.items():
-            # Respect concurrency by processing conversations sequentially here (per-user request)
+        def _process_conversation(conv_idx: int, turns_list: list[tuple[int, dict[str, Any]]]) -> list[dict[str, Any]]:
+            nonlocal semantic_duration_total, semantic_calls, vad_duration_total, vad_calls
+
             conv = dataset[conv_idx]
             conv_id = conv.get("conversation_id", str(conv_idx))
-            target_turn = _parse_int(conv.get("target_turn"))
 
-            # Prepare lists for embeddings and VAD
-            embed_texts = []
-            embed_positions = []
-            vad_texts = []
-            vad_positions = []
+            embed_texts: list[str] = []
+            embed_positions: list[int] = []
+            vad_texts: list[str] = []
+            vad_positions: list[int] = []
             for turn_idx, turn in turns_list:
                 if not turn.get("semantic_embedding"):
                     embed_texts.append(str(turn.get("utterance", "")))
@@ -202,38 +200,32 @@ def embed_dataset(
                     vad_positions.append(turn_idx)
 
             client = GeminiClient()
+            local_failed: list[dict[str, Any]] = []
 
-            # Use inline embedding calls (avoid batch API complexity here)
             embedding_results = None
             if embed_texts:
-                semantic_calls += 1
                 embed_start = time.perf_counter()
                 try:
                     embedding_results = client.embed_texts(embed_texts)
                     embedding_time = time.perf_counter() - embed_start
-                    semantic_duration_total += embedding_time
                     print(
                         f"Inline embeddings completed for conversation {conv_id} ({len(embed_texts)} vectors) "
                         f"in {embedding_time:.2f}s"
                     )
                 except Exception as exc:
                     embedding_time = time.perf_counter() - embed_start
-                    semantic_duration_total += embedding_time
                     err = str(exc)
                     for turn_idx in embed_positions:
                         turn = dataset[conv_idx]["turns"][turn_idx]
                         turn["_embedding_error"] = err
-                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+                        local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
                     embedding_results = None
 
-            # Assign embedding results back
             if embedding_results:
-                # embedding_results may be a list of vectors or a nested structure; try to normalize
-                flat_embs = []
+                flat_embs: list[list[float]] = []
                 if isinstance(embedding_results, list) and embedding_results and isinstance(embedding_results[0], list):
                     flat_embs = embedding_results
                 else:
-                    # attempt to coerce
                     try:
                         flat_embs = [list(item) for item in embedding_results]
                     except Exception:
@@ -248,12 +240,10 @@ def embed_dataset(
                         err = "Missing embedding result"
                         turn = dataset[conv_idx]["turns"][turn_idx]
                         turn["_embedding_error"] = err
-                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+                        local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
 
-            # Now VAD batch: attempt batch generation using interactions via batch API; fallback to per-turn structured call
-            vad_results = []
+            vad_results: list[dict[str, float] | dict[str, str]] = []
             for text in vad_texts:
-                vad_calls += 1
                 vad_start = time.perf_counter()
                 try:
                     vad_res = score_vad(client, text)
@@ -263,14 +253,13 @@ def embed_dataset(
                     vad_duration_total += time.perf_counter() - vad_start
                     vad_results.append({"error": str(exc)})
 
-            # Assign VAD results back
             if vad_results:
                 for pos, turn_idx in enumerate(vad_positions):
                     if pos < len(vad_results):
                         res = vad_results[pos]
                         if isinstance(res, dict) and "error" in res:
                             dataset[conv_idx]["turns"][turn_idx]["_embedding_error"] = res["error"]
-                            failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": res["error"]})
+                            local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": res["error"]})
                         else:
                             dataset[conv_idx]["turns"][turn_idx]["vad_scores"] = res
                             dataset[conv_idx]["turns"][turn_idx].pop("_embedding_error", None)
@@ -279,10 +268,30 @@ def embed_dataset(
                         err = "Missing VAD result"
                         turn = dataset[conv_idx]["turns"][turn_idx]
                         turn["_embedding_error"] = err
-                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+                        local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
 
-            completed += 1
-            print(f"Finished conversation {conv_id} ({completed}/{total_conversations})")
+            return local_failed
+
+        completed = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_requests) as executor:
+            future_to_conv = {
+                executor.submit(_process_conversation, conv_idx, turns_list): conv_idx
+                for conv_idx, turns_list in conv_map.items()
+            }
+            for future in concurrent.futures.as_completed(future_to_conv):
+                conv_idx = future_to_conv[future]
+                try:
+                    result = future.result()
+                    failed_tasks.extend(result)
+                except Exception as exc:
+                    err = str(exc)
+                    for turn_idx, _ in conv_map[conv_idx]:
+                        turn = dataset[conv_idx]["turns"][turn_idx]
+                        turn["_embedding_error"] = err
+                        failed_tasks.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": err})
+                    print(f"Conversation processing failed conv={conv_idx}: {err}")
+                completed += 1
+                print(f"Finished conversation batch {completed}/{total_conversations}")
 
         print("All conversations processed.")
 
