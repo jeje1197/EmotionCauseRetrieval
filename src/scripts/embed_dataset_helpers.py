@@ -92,7 +92,9 @@ def score_vad(client: GeminiClient, text: str) -> dict[str, float]:
         },
         "required": ["valence", "arousal", "dominance"],
     }
-    result = client.generate_structured_json(VAD_PROMPT.format(user_query=text), schema)
+    # Use the lighter flash model for VAD scoring as requested
+    vad_model = "gemini-3.1-flash-lite"
+    result = client.generate_structured_json(VAD_PROMPT.format(user_query=text), schema, model=vad_model)
     return validate_vad_scores({key: float(value) for key, value in result.items()})
 
 

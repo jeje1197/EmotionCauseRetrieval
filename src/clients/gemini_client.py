@@ -12,9 +12,14 @@ class GeminiClient:
         self.client = genai.Client()
         self.model = model
 
-    def generate_structured_json(self, prompt: str, schema: Dict[str, Any]) -> Any:
+    def generate_structured_json(self, prompt: str, schema: Dict[str, Any], model: str | None = None) -> Any:
+        """Generate structured JSON using the interactions API.
+
+        The `model` parameter can override the client's default model for
+        use-cases like structured VAD scoring.
+        """
         interaction = self.client.interactions.create(
-            model=self.model,
+            model=model or self.model,
             input=prompt,
             response_format={
                 "type": "text",
