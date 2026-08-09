@@ -18,6 +18,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from src.scripts.download_dataset import download_all_files
+from src.scripts.cleanup_dataset import cleanup_dataset
 from src.scripts.embed_dataset import embed_dataset
 from src.scripts.format_dataset import write_formatted_dataset
 from src.scripts.select_turns import write_selected_dataset
@@ -27,7 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the RECCON processing pipeline.")
     parser.add_argument(
         "--stage",
-        choices=["download", "format", "select", "embed", "repair", "all"],
+        choices=["download", "format", "select", "embed", "repair", "cleanup", "all"],
         default="all",
         help="Pipeline stage to run.",
     )
@@ -54,6 +55,26 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=10,
         help="Maximum number of concurrent embedding requests.",
+    )
+    parser.add_argument(
+        "--cleanup-dry-run",
+        action="store_true",
+        help="Preview cleanup actions without deleting files.",
+    )
+    parser.add_argument(
+        "--keep-vad-embedded",
+        action="store_true",
+        help="Preserve VAD-only embedded files during cleanup.",
+    )
+    parser.add_argument(
+        "--delete-selected",
+        action="store_true",
+        help="Delete selected datasets during cleanup instead of preserving them.",
+    )
+    parser.add_argument(
+        "--delete-semantic",
+        action="store_true",
+        help="Delete final semantic embedding outputs during cleanup instead of preserving them.",
     )
     return parser.parse_args()
 
@@ -91,6 +112,15 @@ def main() -> None:
             initial_delay=args.initial_delay,
             backoff_factor=args.backoff_factor,
             concurrent_requests=args.concurrent_requests,
+        )
+
+    if args.stage in {"cleanup"}:
+        print("Running cleanup stage...")
+        cleanup_dataset(
+            keep_selected=not args.delete_selected,
+            keep_semantic=not args.delete_semantic,
+            keep_vad_embedded=args.keep_vad_embedded,
+            dry_run=args.cleanup_dry_run,
         )
 
     pipeline_duration = time.perf_counter() - pipeline_start
