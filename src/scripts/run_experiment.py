@@ -280,9 +280,8 @@ def aggregate_metrics(metrics_list: list[dict[str, float]]) -> dict[str, float]:
 def build_conversation_result(
     conversation: Conversation,
     ranked_candidates: list[dict[str, Any]],
-    weight_a: float,
-    weight_b: float,
 ) -> dict[str, Any]:
+    target_turn = next((turn for turn in conversation.turns if turn.turn == conversation.target_turn), None)
     golden_rank = None
     ranked_messages: list[dict[str, Any]] = []
     for index, candidate in enumerate(ranked_candidates):
@@ -300,16 +299,13 @@ def build_conversation_result(
                 "emotion_similarity": candidate["emotion_similarity"],
                 "reranker_score": candidate["reranker_score"],
                 "is_golden": is_golden,
-                "weight_distribution": {
-                    "semantic": weight_a,
-                    "vad": weight_b,
-                },
             }
         )
 
     return {
         "conversation_id": conversation.conversation_id,
         "target_turn": conversation.target_turn,
+        "target_turn_utterance": target_turn.utterance if target_turn is not None else "",
         "golden_turn": conversation.golden_turn,
         "golden_rank": golden_rank,
         "ranked_messages": ranked_messages,
@@ -353,8 +349,6 @@ def run_experiment(
                 build_conversation_result(
                     conversation=conversation,
                     ranked_candidates=ranked_candidates,
-                    weight_a=weight_a,
-                    weight_b=weight_b,
                 )
             )
 

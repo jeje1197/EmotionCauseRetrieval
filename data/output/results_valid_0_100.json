@@ -1,0 +1,437 @@
+{
+  "split": "valid",
+  "input_path": "C:\\Users\\new user\\Projects\\EmotionFactRetrieval\\data\\reccon_valid_embedded_semantic.json",
+  "weight_distribution": {
+    "semantic": 0.0,
+    "vad": 1.0,
+    "semantic_percent": 0,
+    "vad_percent": 100
+  },
+  "metrics": {
+    "hits_at_1": 0.2,
+    "hits_at_3": 0.4,
+    "recall_at_1": 0.2,
+    "recall_at_3": 0.4,
+    "mrr": 0.4133333333333333,
+    "raw_conversation_count": 47,
+    "valid_conversation_count": 5,
+    "evaluated_conversation_count": 5
+  },
+  "conversation_results": [
+    {
+      "conversation_id": "va_504",
+      "target_turn": 6,
+      "target_turn_utterance": "Thanks again .",
+      "golden_turn": 3,
+      "golden_rank": 2,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Good afternoon , madam . Is there anything I can do for you ?",
+          "semantic_similarity": 0.7389357329658944,
+          "emotion_similarity": 0.9938543797674713,
+          "reranker_score": 0.9938543797674713,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Don't worry . I will try to get a taxi for you . You can take it to the bus station .",
+          "semantic_similarity": 0.727880687180717,
+          "emotion_similarity": 0.9842659409243281,
+          "reranker_score": 0.9842659409243281,
+          "is_golden": true
+        },
+        {
+          "rank": 3,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "I am very grateful to your help .",
+          "semantic_similarity": 0.8768437654737967,
+          "emotion_similarity": 0.983105243064922,
+          "reranker_score": 0.983105243064922,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "Don't mention it . It is my duty .",
+          "semantic_similarity": 0.7708523094630477,
+          "emotion_similarity": 0.8477577985111542,
+          "reranker_score": 0.8477577985111542,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Yes , I spent so much time sightseeing here . It is already so late now . I am afraid I can't catch the last bus back to downtown .",
+          "semantic_similarity": 0.7132710612182818,
+          "emotion_similarity": -0.7421205332848171,
+          "reranker_score": -0.7421205332848171,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "va_86",
+      "target_turn": 10,
+      "target_turn_utterance": "Yay !",
+      "golden_turn": 9,
+      "golden_rank": 5,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "I will ! I ' ll feed it , bathe it and walk it every day ! We can get a Labrador or a German Shepard !",
+          "semantic_similarity": 0.7802721377484929,
+          "emotion_similarity": 0.9997474696819758,
+          "reranker_score": 0.9997474696819758,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 8,
+          "speaker": "B",
+          "utterance": "Fine ! Let ' s get a bird then ! We can keep it in its cage and teach it to talk ! A parrot would be awesome !",
+          "semantic_similarity": 0.810490632722822,
+          "emotion_similarity": 0.9989873325561915,
+          "reranker_score": 0.9989873325561915,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Why not ? Come on ! Just a cute little puppy or a kitty !",
+          "semantic_similarity": 0.7880321468449341,
+          "emotion_similarity": 0.9889404010697654,
+          "reranker_score": 0.9889404010697654,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "Ok . How about we get a cat or a ferret ?",
+          "semantic_similarity": 0.7475145958121068,
+          "emotion_similarity": 0.977594296083404,
+          "reranker_score": 0.977594296083404,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 9,
+          "speaker": "A",
+          "utterance": "I ' ll tell you what , I can get you some hamsters and we ' ll take it from there .",
+          "semantic_similarity": 0.7497125238745359,
+          "emotion_similarity": 0.8802210988734627,
+          "reranker_score": 0.8802210988734627,
+          "is_golden": true
+        },
+        {
+          "rank": 6,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "We ' re planning on having children soon , I don ' t think those animals are a good idea with a baby in the house .",
+          "semantic_similarity": 0.6953151358984436,
+          "emotion_similarity": 0.7947803940522169,
+          "reranker_score": 0.7947803940522169,
+          "is_golden": false
+        },
+        {
+          "rank": 7,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Who is going to look after a dog or a cat ?",
+          "semantic_similarity": 0.7289196417128507,
+          "emotion_similarity": 0.5765522725826844,
+          "reranker_score": 0.5765522725826844,
+          "is_golden": false
+        },
+        {
+          "rank": 8,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "We have been over this a hundred times ! We are not getting a pet !",
+          "semantic_similarity": 0.7106829897956308,
+          "emotion_similarity": 0.30080480451295105,
+          "reranker_score": 0.30080480451295105,
+          "is_golden": false
+        },
+        {
+          "rank": 9,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "What if we want to take a vacation ? Who will we leave it with ? Plus , our apartment is too small for that breed of dog .",
+          "semantic_similarity": 0.6877065643216999,
+          "emotion_similarity": -0.16271317013188896,
+          "reranker_score": -0.16271317013188896,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "va_926",
+      "target_turn": 6,
+      "target_turn_utterance": "Sorry . You'd better get off for taking another taxi .",
+      "golden_turn": 5,
+      "golden_rank": 5,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "How slowly you drive !",
+          "semantic_similarity": 0.7308149044923579,
+          "emotion_similarity": 0.33265044139592437,
+          "reranker_score": 0.33265044139592437,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "I'm sorry . Something is wrong with my taxi .",
+          "semantic_similarity": 0.8962994758868104,
+          "emotion_similarity": -0.16410805626470296,
+          "reranker_score": -0.16410805626470296,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Where does it go wrong ?",
+          "semantic_similarity": 0.7351576518706315,
+          "emotion_similarity": -0.19178282129043367,
+          "reranker_score": -0.19178282129043367,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Let me stop my car for check . Oh , my god . I got a flat tyre .",
+          "semantic_similarity": 0.7577945540750745,
+          "emotion_similarity": -0.2183088712239921,
+          "reranker_score": -0.2183088712239921,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "Can it keep going ?",
+          "semantic_similarity": 0.7169175535866543,
+          "emotion_similarity": -0.5806433736970245,
+          "reranker_score": -0.5806433736970245,
+          "is_golden": true
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_7847",
+      "target_turn": 8,
+      "target_turn_utterance": "Mmmm , sounds like risky business . Good luck .",
+      "golden_turn": 5,
+      "golden_rank": 1,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "I should get the items within a week . But in the meantime I'm bidding on a digital video camera .",
+          "semantic_similarity": 0.7606750851780224,
+          "emotion_similarity": 0.7693092581620719,
+          "reranker_score": 0.7693092581620719,
+          "is_golden": true
+        },
+        {
+          "rank": 2,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "Thirty U . S . dollars ... and it's only been used for six months .",
+          "semantic_similarity": 0.7280263574722948,
+          "emotion_similarity": 0.7581753965757456,
+          "reranker_score": 0.7581753965757456,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Yeah . It was so easy and super-fast , once I figured it out .",
+          "semantic_similarity": 0.708105538255573,
+          "emotion_similarity": 0.6868964074478411,
+          "reranker_score": 0.6868964074478411,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Good for you . Did you use Paypal ?",
+          "semantic_similarity": 0.7444931943007663,
+          "emotion_similarity": 0.6720601732560162,
+          "reranker_score": 0.6720601732560162,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Guess what , Gilly ? I won both bids .",
+          "semantic_similarity": 0.7476614389537123,
+          "emotion_similarity": 0.608242606944853,
+          "reranker_score": 0.608242606944853,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "That's the beauty of it , and the danger .",
+          "semantic_similarity": 0.8202002885508467,
+          "emotion_similarity": 0.2182178902359923,
+          "reranker_score": 0.2182178902359923,
+          "is_golden": false
+        },
+        {
+          "rank": 7,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "How much ?",
+          "semantic_similarity": 0.7605615362608474,
+          "emotion_similarity": 0.0,
+          "reranker_score": 0.0,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "va_848",
+      "target_turn": 12,
+      "target_turn_utterance": "That's great ! Thank you very much .",
+      "golden_turn": 6,
+      "golden_rank": 6,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "That would be great .",
+          "semantic_similarity": 0.8717119184950952,
+          "emotion_similarity": 0.9862329566914237,
+          "reranker_score": 0.9862329566914237,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Would you like us to deliver the mattress for you , sir ?",
+          "semantic_similarity": 0.6796430554936697,
+          "emotion_similarity": 0.9812896703280735,
+          "reranker_score": 0.9812896703280735,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Thank you for purchasing your new mattress with us .",
+          "semantic_similarity": 0.8100826387670601,
+          "emotion_similarity": 0.9499161027273146,
+          "reranker_score": 0.9499161027273146,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 9,
+          "speaker": "A",
+          "utterance": "We can have it to you at that time .",
+          "semantic_similarity": 0.6758333807557169,
+          "emotion_similarity": 0.9156559407552795,
+          "reranker_score": 0.9156559407552795,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "What time exactly ?",
+          "semantic_similarity": 0.7033459343473868,
+          "emotion_similarity": 0.6738202810148576,
+          "reranker_score": 0.6738202810148576,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "I need it delivered tomorrow . Will that be possible ?",
+          "semantic_similarity": 0.6463707822490817,
+          "emotion_similarity": 0.6586130175921506,
+          "reranker_score": 0.6586130175921506,
+          "is_golden": true
+        },
+        {
+          "rank": 7,
+          "turn": 10,
+          "speaker": "B",
+          "utterance": "That's not a problem ?",
+          "semantic_similarity": 0.7146224238971656,
+          "emotion_similarity": 0.639419666281643,
+          "reranker_score": 0.639419666281643,
+          "is_golden": false
+        },
+        {
+          "rank": 8,
+          "turn": 11,
+          "speaker": "A",
+          "utterance": "We will deliver your mattress tomorrow at 12 o'clock .",
+          "semantic_similarity": 0.6715426427927446,
+          "emotion_similarity": 0.5658622845517925,
+          "reranker_score": 0.5658622845517925,
+          "is_golden": false
+        },
+        {
+          "rank": 9,
+          "turn": 8,
+          "speaker": "B",
+          "utterance": "I need it delivered at 12 o'clock .",
+          "semantic_similarity": 0.6581043060586069,
+          "emotion_similarity": 0.5462799719443219,
+          "reranker_score": 0.5462799719443219,
+          "is_golden": false
+        },
+        {
+          "rank": 10,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "When do you want it delivered ?",
+          "semantic_similarity": 0.6748577772727371,
+          "emotion_similarity": 0.43314808182420994,
+          "reranker_score": 0.43314808182420994,
+          "is_golden": false
+        },
+        {
+          "rank": 11,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "No , thank you .",
+          "semantic_similarity": 0.781856449474911,
+          "emotion_similarity": -0.09518000551311889,
+          "reranker_score": -0.09518000551311889,
+          "is_golden": false
+        }
+      ]
+    }
+  ]
+}
