@@ -1,0 +1,1414 @@
+{
+  "split": "test",
+  "input_path": "C:\\Users\\new user\\Projects\\EmotionFactRetrieval\\data\\reccon_test_embedded_semantic.json",
+  "similarity_range": "0_to_1",
+  "weight_distribution": {
+    "semantic": 0.0,
+    "vad": 1.0,
+    "semantic_percent": 0,
+    "vad_percent": 100
+  },
+  "metrics": {
+    "hits_at_1": 0.2631578947368421,
+    "hits_at_3": 0.47368421052631576,
+    "recall_at_1": 0.2631578947368421,
+    "recall_at_3": 0.47368421052631576,
+    "mrr": 0.4619047619047619,
+    "raw_conversation_count": 225,
+    "valid_conversation_count": 19,
+    "evaluated_conversation_count": 19
+  },
+  "conversation_results": [
+    {
+      "conversation_id": "tr_10606",
+      "target_turn": 5,
+      "target_turn_utterance": "Thanks so much . I owe you one .",
+      "golden_turn": 2,
+      "golden_rank": 1,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Sure , here you go .",
+          "semantic_similarity": 0.8919493780027528,
+          "emotion_similarity": 0.9868197942337384,
+          "reranker_score": 0.9868197942337384,
+          "is_golden": true
+        },
+        {
+          "rank": 2,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Of course . There you are .",
+          "semantic_similarity": 0.8841225264164003,
+          "emotion_similarity": 0.8506923604260923,
+          "reranker_score": 0.8506923604260923,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Thanks . I don't suppose you have some paper , too .",
+          "semantic_similarity": 0.9136516066946466,
+          "emotion_similarity": 0.80968315236121,
+          "reranker_score": 0.80968315236121,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Hey , Ann . You don't have a pen , do you ?",
+          "semantic_similarity": 0.8517962575311964,
+          "emotion_similarity": 0.6613328163609667,
+          "reranker_score": 0.6613328163609667,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_8576",
+      "target_turn": 12,
+      "target_turn_utterance": "The hot drinks first would be great . Thanks !",
+      "golden_turn": 11,
+      "golden_rank": 8,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 8,
+          "speaker": "B",
+          "utterance": "We would also like a piece of chocolate mousse cake . Could you bring us four dessert forks , please ?",
+          "semantic_similarity": 0.8796373917889877,
+          "emotion_similarity": 0.9997088961094649,
+          "reranker_score": 0.9997088961094649,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 9,
+          "speaker": "A",
+          "utterance": "How about some coffee and tea as well ?",
+          "semantic_similarity": 0.9191782831213771,
+          "emotion_similarity": 0.9979936863761232,
+          "reranker_score": 0.9979936863761232,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Dessert sounds perfect , but I would like to split something with my friends .",
+          "semantic_similarity": 0.8787552164958187,
+          "emotion_similarity": 0.9975833290938226,
+          "reranker_score": 0.9975833290938226,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "One dessert will serve two , so would you like to split a second one ?",
+          "semantic_similarity": 0.8696172555557073,
+          "emotion_similarity": 0.9973670871824072,
+          "reranker_score": 0.9973670871824072,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "I think that the apple crisp would be wonderful .",
+          "semantic_similarity": 0.8807754239821312,
+          "emotion_similarity": 0.9968072761580254,
+          "reranker_score": 0.9968072761580254,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "How about a dessert to top off that wonderful meal ?",
+          "semantic_similarity": 0.8761009408910642,
+          "emotion_similarity": 0.994919318970645,
+          "reranker_score": 0.994919318970645,
+          "is_golden": false
+        },
+        {
+          "rank": 7,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "On this evening's dessert list , we have chocolate mousse cake , homemade fresh strawberry shortcake , and a spicy rum apple crisp .",
+          "semantic_similarity": 0.8626099513377398,
+          "emotion_similarity": 0.9926537932910175,
+          "reranker_score": 0.9926537932910175,
+          "is_golden": false
+        },
+        {
+          "rank": 8,
+          "turn": 11,
+          "speaker": "A",
+          "utterance": "I will prepare your desserts and have someone bring you your drinks right away .",
+          "semantic_similarity": 0.9066975529121832,
+          "emotion_similarity": 0.9892212936086111,
+          "reranker_score": 0.9892212936086111,
+          "is_golden": true
+        },
+        {
+          "rank": 9,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Our meal was absolutely perfect !",
+          "semantic_similarity": 0.8552110766948529,
+          "emotion_similarity": 0.9772967409591884,
+          "reranker_score": 0.9772967409591884,
+          "is_golden": false
+        },
+        {
+          "rank": 10,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Did your meal meet with your approval ?",
+          "semantic_similarity": 0.8516747563873648,
+          "emotion_similarity": 0.9492065037331112,
+          "reranker_score": 0.9492065037331112,
+          "is_golden": false
+        },
+        {
+          "rank": 11,
+          "turn": 10,
+          "speaker": "B",
+          "utterance": "We are all tea drinkers . Please bring us four teas .",
+          "semantic_similarity": 0.9059343961230454,
+          "emotion_similarity": 0.9198770296896724,
+          "reranker_score": 0.9198770296896724,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_10420",
+      "target_turn": 5,
+      "target_turn_utterance": "I know ! I was in ankle deep water trying to get to my car that day ! The handyman definitely has his work cut out for him .",
+      "golden_turn": 1,
+      "golden_rank": 1,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "The air conditioning is not working ! We need to call a handyman before we start to fry in here !",
+          "semantic_similarity": 0.8934643032018277,
+          "emotion_similarity": 0.9856874137573437,
+          "reranker_score": 0.9856874137573437,
+          "is_golden": true
+        },
+        {
+          "rank": 2,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "That would be convenient . They might as well ask him to fix the electrical wiring . The circuit breakers keep going out all the time . It ' s really annoying !",
+          "semantic_similarity": 0.8893069939160332,
+          "emotion_similarity": 0.9545686450484948,
+          "reranker_score": 0.9545686450484948,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Yeah you are right . This office is falling apart ! Frank told me the other day that the gutters outside were clogged and that ' s why the parking lot was flooded .",
+          "semantic_similarity": 0.9138091065724848,
+          "emotion_similarity": 0.9287280415598724,
+          "reranker_score": 0.9287280415598724,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Dan is on top of that . I think they are also getting the handyman to fix the bathroom toilet that keeps clogging up .",
+          "semantic_similarity": 0.9023692892148599,
+          "emotion_similarity": 0.0991081371313634,
+          "reranker_score": 0.0991081371313634,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_8265",
+      "target_turn": 7,
+      "target_turn_utterance": "You are welcome .",
+      "golden_turn": 6,
+      "golden_rank": 1,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "It seems that is a better way . Thank you .",
+          "semantic_similarity": 0.9248055585351302,
+          "emotion_similarity": 0.9981362536093749,
+          "reranker_score": 0.9981362536093749,
+          "is_golden": true
+        },
+        {
+          "rank": 2,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Yes . A lot of cash . Almost forty thousand pounds .",
+          "semantic_similarity": 0.8665681812839882,
+          "emotion_similarity": 0.8639935290614467,
+          "reranker_score": 0.8639935290614467,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "Oh , I ' m sorry to hear that . I think you ' d better talk to the police officer walking there .",
+          "semantic_similarity": 0.8765093191384328,
+          "emotion_similarity": 0.5178334290200889,
+          "reranker_score": 0.5178334290200889,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Hey , don ' t walk on the lawn .",
+          "semantic_similarity": 0.8666529399764727,
+          "emotion_similarity": 0.4331303901951929,
+          "reranker_score": 0.4331303901951929,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "You lost your wallet ? Anything important in it ?",
+          "semantic_similarity": 0.8622089553283949,
+          "emotion_similarity": 0.1876524762227879,
+          "reranker_score": 0.1876524762227879,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Sorry , I ' m looking for my wallet .",
+          "semantic_similarity": 0.8712536161963962,
+          "emotion_similarity": 0.10189473141134042,
+          "reranker_score": 0.10189473141134042,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_10549",
+      "target_turn": 13,
+      "target_turn_utterance": "It's a deal .",
+      "golden_turn": 12,
+      "golden_rank": 8,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "Believe me , it's worth the price .",
+          "semantic_similarity": 0.909898690417196,
+          "emotion_similarity": 0.9960211885181381,
+          "reranker_score": 0.9960211885181381,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Great . The bed is exactly what I have been looking for !",
+          "semantic_similarity": 0.8693157118292054,
+          "emotion_similarity": 0.989858651568742,
+          "reranker_score": 0.989858651568742,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Oh , I like red wood . How much do you charge for it ?",
+          "semantic_similarity": 0.8834736314797831,
+          "emotion_similarity": 0.9815397943335944,
+          "reranker_score": 0.9815397943335944,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 9,
+          "speaker": "A",
+          "utterance": "Shall we make it 250 dollars ?",
+          "semantic_similarity": 0.9113146482081289,
+          "emotion_similarity": 0.9675143634306741,
+          "reranker_score": 0.9675143634306741,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "You have good taste . It's made of red wood .",
+          "semantic_similarity": 0.8870483121509585,
+          "emotion_similarity": 0.9464858626451442,
+          "reranker_score": 0.9464858626451442,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 8,
+          "speaker": "B",
+          "utterance": "How much are you willing to pay ?",
+          "semantic_similarity": 0.9078959341922956,
+          "emotion_similarity": 0.8866544466698503,
+          "reranker_score": 0.8866544466698503,
+          "is_golden": false
+        },
+        {
+          "rank": 7,
+          "turn": 11,
+          "speaker": "A",
+          "utterance": "What about 260 dollars ?",
+          "semantic_similarity": 0.8969115671844127,
+          "emotion_similarity": 0.86681261567265,
+          "reranker_score": 0.86681261567265,
+          "is_golden": false
+        },
+        {
+          "rank": 8,
+          "turn": 12,
+          "speaker": "B",
+          "utterance": "275 dollars is the lowest price I can offer .",
+          "semantic_similarity": 0.9042053404296841,
+          "emotion_similarity": 0.7935699414679842,
+          "reranker_score": 0.7935699414679842,
+          "is_golden": true
+        },
+        {
+          "rank": 9,
+          "turn": 10,
+          "speaker": "B",
+          "utterance": "No . That price would hardly cover the cost .",
+          "semantic_similarity": 0.8717480091244738,
+          "emotion_similarity": 0.620292494519509,
+          "reranker_score": 0.620292494519509,
+          "is_golden": false
+        },
+        {
+          "rank": 10,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "300 dollars .",
+          "semantic_similarity": 0.9092050322612908,
+          "emotion_similarity": 0.6018923932424028,
+          "reranker_score": 0.6018923932424028,
+          "is_golden": false
+        },
+        {
+          "rank": 11,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "That's sheer robbery !",
+          "semantic_similarity": 0.8689105048680543,
+          "emotion_similarity": 0.2937375902286521,
+          "reranker_score": 0.2937375902286521,
+          "is_golden": false
+        },
+        {
+          "rank": 12,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "It's more than I can afford . Can I make an offer ?",
+          "semantic_similarity": 0.883880427238628,
+          "emotion_similarity": 0.09750815710828636,
+          "reranker_score": 0.09750815710828636,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_713",
+      "target_turn": 6,
+      "target_turn_utterance": "Well , compared with my wife , I'm just a beginner .",
+      "golden_turn": 5,
+      "golden_rank": 2,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Maybe . Several people have suggested that I get more yellow clothes . They say the color suits me because I have a fair complexion .",
+          "semantic_similarity": 0.8694171152215493,
+          "emotion_similarity": 0.7096569673443837,
+          "reranker_score": 0.7096569673443837,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "Thank you for your compliments . It sounds like you're a clothing expert .",
+          "semantic_similarity": 0.8663385947747625,
+          "emotion_similarity": 0.5141648174917519,
+          "reranker_score": 0.5141648174917519,
+          "is_golden": true
+        },
+        {
+          "rank": 3,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "That's right . You know , pink , green and black could also be good for you . Actually , I think that all colors are okay for a person with your complexion . It's just that different colors can give people different impressions . For example , black could make you look mature , while pink could make you look young and energetic .",
+          "semantic_similarity": 0.8674155822136098,
+          "emotion_similarity": 0.48446575584997,
+          "reranker_score": 0.48446575584997,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Oh , yes . My wife bought it for me yesterday . Hmm , you look nice in that yellow dress . Yellow suits you really well .",
+          "semantic_similarity": 0.8872598580066615,
+          "emotion_similarity": 0.44346341049418353,
+          "reranker_score": 0.44346341049418353,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Morning , Peter . Nice suit ! A new one ?",
+          "semantic_similarity": 0.8471161737700565,
+          "emotion_similarity": 0.4403122127288048,
+          "reranker_score": 0.4403122127288048,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_8946",
+      "target_turn": 12,
+      "target_turn_utterance": "I want justice .",
+      "golden_turn": 2,
+      "golden_rank": 7,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "They did ?",
+          "semantic_similarity": 0.8744554950751742,
+          "emotion_similarity": 0.9367896569433839,
+          "reranker_score": 0.9367896569433839,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Why do you want to take the police to court ?",
+          "semantic_similarity": 0.9143723134295405,
+          "emotion_similarity": 0.8754364668854762,
+          "reranker_score": 0.8754364668854762,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 9,
+          "speaker": "A",
+          "utterance": "What was their reason for arresting you ?",
+          "semantic_similarity": 0.8866677940068441,
+          "emotion_similarity": 0.8578617498181977,
+          "reranker_score": 0.8578617498181977,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "I thought they let you go .",
+          "semantic_similarity": 0.8618104121003788,
+          "emotion_similarity": 0.7058664625513065,
+          "reranker_score": 0.7058664625513065,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "They made you spend the night at the station ?",
+          "semantic_similarity": 0.8622330084327542,
+          "emotion_similarity": 0.6368692016870225,
+          "reranker_score": 0.6368692016870225,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 10,
+          "speaker": "B",
+          "utterance": "I matched the description of a bank robber they were looking for .",
+          "semantic_similarity": 0.8821888310385422,
+          "emotion_similarity": 0.6289145259672234,
+          "reranker_score": 0.6289145259672234,
+          "is_golden": false
+        },
+        {
+          "rank": 7,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "They arrested me without probable cause .",
+          "semantic_similarity": 0.8905287220114646,
+          "emotion_similarity": 0.617948972580902,
+          "reranker_score": 0.617948972580902,
+          "is_golden": true
+        },
+        {
+          "rank": 8,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "They had no reason for arresting me .",
+          "semantic_similarity": 0.8805402207557549,
+          "emotion_similarity": 0.5865038820950192,
+          "reranker_score": 0.5865038820950192,
+          "is_golden": false
+        },
+        {
+          "rank": 9,
+          "turn": 8,
+          "speaker": "B",
+          "utterance": "Yes , they did .",
+          "semantic_similarity": 0.8774504906918745,
+          "emotion_similarity": 0.5143978070930226,
+          "reranker_score": 0.5143978070930226,
+          "is_golden": false
+        },
+        {
+          "rank": 10,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "Yes , the next morning .",
+          "semantic_similarity": 0.8776881162678536,
+          "emotion_similarity": 0.4002490663892367,
+          "reranker_score": 0.4002490663892367,
+          "is_golden": false
+        },
+        {
+          "rank": 11,
+          "turn": 11,
+          "speaker": "A",
+          "utterance": "I see .",
+          "semantic_similarity": 0.8932645463673454,
+          "emotion_similarity": 0.11125920848838794,
+          "reranker_score": 0.11125920848838794,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_8414",
+      "target_turn": 7,
+      "target_turn_utterance": "Don't mention it . Just a little thing I did .",
+      "golden_turn": 6,
+      "golden_rank": 5,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "It's a souvenir I bought for you from Rome .",
+          "semantic_similarity": 0.8747353806674047,
+          "emotion_similarity": 0.8646576316259638,
+          "reranker_score": 0.8646576316259638,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "I'm glad you like it .",
+          "semantic_similarity": 0.8786087511679381,
+          "emotion_similarity": 0.8567633303549267,
+          "reranker_score": 0.8567633303549267,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Mr . Mass , here is a gift for you .",
+          "semantic_similarity": 0.879349274747428,
+          "emotion_similarity": 0.8384915834266191,
+          "reranker_score": 0.8384915834266191,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Oh . Thanks a million .",
+          "semantic_similarity": 0.873235385617674,
+          "emotion_similarity": 0.828809229731384,
+          "reranker_score": 0.828809229731384,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "It's very kind of you . I really don't know how I can thank you enough .",
+          "semantic_similarity": 0.8710175137158884,
+          "emotion_similarity": 0.8145410010586982,
+          "reranker_score": 0.8145410010586982,
+          "is_golden": true
+        },
+        {
+          "rank": 6,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "How beautiful ! I love it at all .",
+          "semantic_similarity": 0.843026243824879,
+          "emotion_similarity": 0.772530496452347,
+          "reranker_score": 0.772530496452347,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_8028",
+      "target_turn": 8,
+      "target_turn_utterance": "This PC is top of the line and I guarantee it will never freeze ! If it does , we ' ll give you your money back !",
+      "golden_turn": 7,
+      "golden_rank": 5,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "Well , this desktop over here is our latest model . It has a four gigahertz processor with sixteen gigabytes in RAM and a hard disk with one terabyte . Of course , it includes a mouse , keyboard and desk speakers .",
+          "semantic_similarity": 0.9092455058961617,
+          "emotion_similarity": 0.9675225863037642,
+          "reranker_score": 0.9675225863037642,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Yes , but technology is ever changing and technology is becoming obsolete faster and faster !",
+          "semantic_similarity": 0.875645252927612,
+          "emotion_similarity": 0.4430242112268882,
+          "reranker_score": 0.4430242112268882,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "So can you fix it ?",
+          "semantic_similarity": 0.8666054894804622,
+          "emotion_similarity": 0.4250630581392777,
+          "reranker_score": 0.4250630581392777,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "What do you mean ? I bought this computer just three years ago !",
+          "semantic_similarity": 0.8895932511345332,
+          "emotion_similarity": 0.3782951133461861,
+          "reranker_score": 0.3782951133461861,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "I have no idea what you are talking about . I just want to know if it ' s good and if I will be able to play solitaire without the computer crashing or freezing all the time !",
+          "semantic_similarity": 0.8895948110246956,
+          "emotion_similarity": 0.3687144146475078,
+          "reranker_score": 0.3687144146475078,
+          "is_golden": true
+        },
+        {
+          "rank": 6,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "OK , I know where this is going . How much will it cost me to get a new computer ?",
+          "semantic_similarity": 0.8784909358873829,
+          "emotion_similarity": 0.20959561990183617,
+          "reranker_score": 0.20959561990183617,
+          "is_golden": false
+        },
+        {
+          "rank": 7,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "I ' m sorry sir . This computer is not broken or damaged . It ' s simply just too old ! That ' s why your programs and applications are running slow . There really isn ' t much I can do .",
+          "semantic_similarity": 0.8657742869453559,
+          "emotion_similarity": 0.19737729395225928,
+          "reranker_score": 0.19737729395225928,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_976",
+      "target_turn": 5,
+      "target_turn_utterance": "You're right . He sure is .",
+      "golden_turn": 4,
+      "golden_rank": 2,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "I think so . Yes , they get along so well .",
+          "semantic_similarity": 0.9051992006746978,
+          "emotion_similarity": 0.9995296525793103,
+          "reranker_score": 0.9995296525793103,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "I like him . He's good for her .",
+          "semantic_similarity": 0.9101834351090256,
+          "emotion_similarity": 0.9952826386886715,
+          "reranker_score": 0.9952826386886715,
+          "is_golden": true
+        },
+        {
+          "rank": 3,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Yeah , you can count on it .",
+          "semantic_similarity": 0.9095351044049083,
+          "emotion_similarity": 0.9728744968481248,
+          "reranker_score": 0.9728744968481248,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Do you think they two will get married ?",
+          "semantic_similarity": 0.8694915260555925,
+          "emotion_similarity": 0.9274252071325552,
+          "reranker_score": 0.9274252071325552,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_9812",
+      "target_turn": 6,
+      "target_turn_utterance": "Thank you . Oh , it tastes nice .",
+      "golden_turn": 2,
+      "golden_rank": 4,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "This food is a Wax specialty . Please help yourself .",
+          "semantic_similarity": 0.8906559247834245,
+          "emotion_similarity": 0.9987043253680348,
+          "reranker_score": 0.9987043253680348,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Thank you very much .",
+          "semantic_similarity": 0.934031884643636,
+          "emotion_similarity": 0.9973175772136669,
+          "reranker_score": 0.9973175772136669,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "I propose a toast to your pleasant tour in China .",
+          "semantic_similarity": 0.8977735817986698,
+          "emotion_similarity": 0.992133001536692,
+          "reranker_score": 0.992133001536692,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Thank you . It's very kind of you to invite me to such a beautiful place .",
+          "semantic_similarity": 0.9219105734886092,
+          "emotion_similarity": 0.9868197942337384,
+          "reranker_score": 0.9868197942337384,
+          "is_golden": true
+        },
+        {
+          "rank": 5,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Will you sit down , Mr . White ?",
+          "semantic_similarity": 0.8433510103297778,
+          "emotion_similarity": 0.7332847374079217,
+          "reranker_score": 0.7332847374079217,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_38",
+      "target_turn": 7,
+      "target_turn_utterance": "Sure . Here you are , $ 200 , Thank you , please come again ! Now it ' s my turn to roll the dice .",
+      "golden_turn": 3,
+      "golden_rank": 1,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Well you can ' t just take the money . You have to ask the bank for money . And I ' m the banker .",
+          "semantic_similarity": 0.8867083867382302,
+          "emotion_similarity": 0.9047225253931824,
+          "reranker_score": 0.9047225253931824,
+          "is_golden": true
+        },
+        {
+          "rank": 2,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "I am not cheating . When you pass go , you collect $ 200 , Everyone knows that !",
+          "semantic_similarity": 0.9062680210172326,
+          "emotion_similarity": 0.6884685866749822,
+          "reranker_score": 0.6884685866749822,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "Can I have my $ 200 please ?",
+          "semantic_similarity": 0.9259918670849172,
+          "emotion_similarity": 0.6752063894712879,
+          "reranker_score": 0.6752063894712879,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Hey . Why did you take that money ? You are such a cheater ! I should send you to jail !",
+          "semantic_similarity": 0.860857798904358,
+          "emotion_similarity": 0.5681932064818529,
+          "reranker_score": 0.5681932064818529,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "Yes ...",
+          "semantic_similarity": 0.8960994342996154,
+          "emotion_similarity": 0.4094477584219447,
+          "reranker_score": 0.4094477584219447,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Banker ?",
+          "semantic_similarity": 0.8888891288911621,
+          "emotion_similarity": 0.37142857142857144,
+          "reranker_score": 0.37142857142857144,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_625",
+      "target_turn": 6,
+      "target_turn_utterance": "Good . I'll do it .",
+      "golden_turn": 4,
+      "golden_rank": 4,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "They got me a part-time tutoring job , teaching an Australian businessman Chinese .",
+          "semantic_similarity": 0.8706594370314311,
+          "emotion_similarity": 0.9992775936305571,
+          "reranker_score": 0.9992775936305571,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "I went to the tutoring service centre on campus today . And I got a job .",
+          "semantic_similarity": 0.8837585922973025,
+          "emotion_similarity": 0.9914492263874624,
+          "reranker_score": 0.9914492263874624,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Congratulation . What will you do ?",
+          "semantic_similarity": 0.8963489622129377,
+          "emotion_similarity": 0.976256755808043,
+          "reranker_score": 0.976256755808043,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "That's wonderful . I want to get a part-time job too . Tell me what I should do .",
+          "semantic_similarity": 0.9080131885364504,
+          "emotion_similarity": 0.9695954941000957,
+          "reranker_score": 0.9695954941000957,
+          "is_golden": true
+        },
+        {
+          "rank": 5,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "It's very simple actually . You can go to the service centre and have your name and job interest resisted . They will give you a call if any job comes up .",
+          "semantic_similarity": 0.8880470227561768,
+          "emotion_similarity": 0.8272414761757165,
+          "reranker_score": 0.8272414761757165,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_546",
+      "target_turn": 7,
+      "target_turn_utterance": "I will . Don't worry !",
+      "golden_turn": 3,
+      "golden_rank": 3,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "Hey ! I'm the tour guide . I'll take care of the Taiwanese guests .",
+          "semantic_similarity": 0.9023918414672973,
+          "emotion_similarity": 0.9902679035487201,
+          "reranker_score": 0.9902679035487201,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "How's the bride-to-be ?",
+          "semantic_similarity": 0.8643975415007716,
+          "emotion_similarity": 0.9391380293602481,
+          "reranker_score": 0.9391380293602481,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Just relax . With me as your maid of honor , everything will be fine !",
+          "semantic_similarity": 0.9447952810113249,
+          "emotion_similarity": 0.9368202409716393,
+          "reranker_score": 0.9368202409716393,
+          "is_golden": true
+        },
+        {
+          "rank": 4,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "You're going to have to tell them what to do in church , what everything means ...",
+          "semantic_similarity": 0.8748304401855906,
+          "emotion_similarity": 0.7406649574603851,
+          "reranker_score": 0.7406649574603851,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "I'm worried that everything will be chaotic !",
+          "semantic_similarity": 0.9051697093268274,
+          "emotion_similarity": 0.17356607179571526,
+          "reranker_score": 0.17356607179571526,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Tired and stressed . This wedding is giving me a headache .",
+          "semantic_similarity": 0.860795185025125,
+          "emotion_similarity": 0.1002945613455209,
+          "reranker_score": 0.1002945613455209,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "tr_8002",
+      "target_turn": 5,
+      "target_turn_utterance": "And he can move . too ! He dances like Ricky Martin !",
+      "golden_turn": 4,
+      "golden_rank": 1,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "( Sound of Allen singing ) Hey , Allen has a really good voice ! He sounds like Johnny Dean !",
+          "semantic_similarity": 0.9060743892605089,
+          "emotion_similarity": 0.999326555376171,
+          "reranker_score": 0.999326555376171,
+          "is_golden": true
+        },
+        {
+          "rank": 2,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "That was before he heard Stanley sing ! I guess he couldn't stand it any more , so he decided to give it a try himself !",
+          "semantic_similarity": 0.8844671804787743,
+          "emotion_similarity": 0.9984999592884164,
+          "reranker_score": 0.9984999592884164,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Look ! Allen has the mic !",
+          "semantic_similarity": 0.8863527942744024,
+          "emotion_similarity": 0.9946542911108249,
+          "reranker_score": 0.9946542911108249,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "I thought he only liked to listen !",
+          "semantic_similarity": 0.8699802244508076,
+          "emotion_similarity": 0.7501121828518951,
+          "reranker_score": 0.7501121828518951,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_913",
+      "target_turn": 7,
+      "target_turn_utterance": "That's terrific !",
+      "golden_turn": 6,
+      "golden_rank": 5,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Diane Grant ? I haven't seen you for ages !",
+          "semantic_similarity": 0.8644567945129957,
+          "emotion_similarity": 0.9997027549919469,
+          "reranker_score": 0.9997027549919469,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "Pretty good . Say , you've really changed !",
+          "semantic_similarity": 0.9122359271998544,
+          "emotion_similarity": 0.9976257705642423,
+          "reranker_score": 0.9976257705642423,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "Well , you look great ! How are you ?",
+          "semantic_similarity": 0.900255415172016,
+          "emotion_similarity": 0.9948876909123532,
+          "reranker_score": 0.9948876909123532,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "Brian ! How have you been ?",
+          "semantic_similarity": 0.8672575489614536,
+          "emotion_similarity": 0.9947772618825477,
+          "reranker_score": 0.9947772618825477,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "I'm doing really well . I got married about three years ago . I have two kids now .",
+          "semantic_similarity": 0.8839456571861477,
+          "emotion_similarity": 0.9636975020190717,
+          "reranker_score": 0.9636975020190717,
+          "is_golden": true
+        },
+        {
+          "rank": 6,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "Oh , well , I've lost some weight . And my hair is longer than before .",
+          "semantic_similarity": 0.8511210127807411,
+          "emotion_similarity": 0.5624721236874737,
+          "reranker_score": 0.5624721236874737,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_691",
+      "target_turn": 5,
+      "target_turn_utterance": "Nothing . Just wear comfortable clothes and good shoes for walking . We'll bring everything .",
+      "golden_turn": 1,
+      "golden_rank": 2,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "I think we can go to the river , go around and have supper .",
+          "semantic_similarity": 0.880058323995542,
+          "emotion_similarity": 0.9183300132670378,
+          "reranker_score": 0.9183300132670378,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "Lily , can you take part in our picnic this weekend ?",
+          "semantic_similarity": 0.8583917728692957,
+          "emotion_similarity": 0.8492151478847891,
+          "reranker_score": 0.8492151478847891,
+          "is_golden": true
+        },
+        {
+          "rank": 3,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "That sounds great . Where are you going ?",
+          "semantic_similarity": 0.8682810688256181,
+          "emotion_similarity": 0.8297182370577638,
+          "reranker_score": 0.8297182370577638,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "What should I bring ?",
+          "semantic_similarity": 0.9102094657870712,
+          "emotion_similarity": 0.320715708599841,
+          "reranker_score": 0.320715708599841,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_999",
+      "target_turn": 12,
+      "target_turn_utterance": "wonderful ! I'll start packing our suitcases .",
+      "golden_turn": 11,
+      "golden_rank": 4,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "great , let's go !",
+          "semantic_similarity": 0.9397970084313423,
+          "emotion_similarity": 0.9993036238904758,
+          "reranker_score": 0.9993036238904758,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 7,
+          "speaker": "A",
+          "utterance": "why not go again to celebrate out one-year anniversary ? We can go to the same beach , stay in the same hotel and enjoy a dinner in the same restaurant .",
+          "semantic_similarity": 0.8719843648880974,
+          "emotion_similarity": 0.9965890811275573,
+          "reranker_score": 0.9965890811275573,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "What a nice day !",
+          "semantic_similarity": 0.9019237820910968,
+          "emotion_similarity": 0.9898525945613245,
+          "reranker_score": 0.9898525945613245,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 11,
+          "speaker": "A",
+          "utterance": "ok . I'll make the arrangements . It will be great .",
+          "semantic_similarity": 0.9166969294643019,
+          "emotion_similarity": 0.983371164481929,
+          "reranker_score": 0.983371164481929,
+          "is_golden": true
+        },
+        {
+          "rank": 5,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "yes . How about going out and enjoying the sunshine on the grass ?",
+          "semantic_similarity": 0.8798190108547754,
+          "emotion_similarity": 0.9825154281050484,
+          "reranker_score": 0.9825154281050484,
+          "is_golden": false
+        },
+        {
+          "rank": 6,
+          "turn": 6,
+          "speaker": "B",
+          "utterance": "yes , it was wonderful but it's already been a year . How time flies !",
+          "semantic_similarity": 0.8756906428503124,
+          "emotion_similarity": 0.9724010307572937,
+          "reranker_score": 0.9724010307572937,
+          "is_golden": false
+        },
+        {
+          "rank": 7,
+          "turn": 9,
+          "speaker": "A",
+          "utterance": "never mind that , I'll take care of it . Are you available next week ?",
+          "semantic_similarity": 0.8604481759335575,
+          "emotion_similarity": 0.9510267002057529,
+          "reranker_score": 0.9510267002057529,
+          "is_golden": false
+        },
+        {
+          "rank": 8,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "exactly . You know , the sunshine and wind remind me of our honeymoon . You remember ? The island , the sound of the waves , the salty sea air and the sunshine ...",
+          "semantic_similarity": 0.8801780705252658,
+          "emotion_similarity": 0.8579697771855768,
+          "reranker_score": 0.8579697771855768,
+          "is_golden": false
+        },
+        {
+          "rank": 9,
+          "turn": 10,
+          "speaker": "B",
+          "utterance": "yeah , I think so .",
+          "semantic_similarity": 0.8709931452744093,
+          "emotion_similarity": 0.51994820192518,
+          "reranker_score": 0.51994820192518,
+          "is_golden": false
+        },
+        {
+          "rank": 10,
+          "turn": 8,
+          "speaker": "B",
+          "utterance": "are you kidding ? Can you afford it ? Do you think we can get a room on such short notice ?",
+          "semantic_similarity": 0.8494334170684701,
+          "emotion_similarity": 0.4652572793406804,
+          "reranker_score": 0.4652572793406804,
+          "is_golden": false
+        },
+        {
+          "rank": 11,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "hey , darling , I think I might have a little heatstroke from being in the sun all day . I was so relaxed . It felt as if I were in another world .",
+          "semantic_similarity": 0.8686506961901057,
+          "emotion_similarity": 0.3524003852872165,
+          "reranker_score": 0.3524003852872165,
+          "is_golden": false
+        }
+      ]
+    },
+    {
+      "conversation_id": "te_767",
+      "target_turn": 6,
+      "target_turn_utterance": "The viewing was for saying goodbye , and I didn't even get that .",
+      "golden_turn": 1,
+      "golden_rank": 5,
+      "ranked_messages": [
+        {
+          "rank": 1,
+          "turn": 4,
+          "speaker": "B",
+          "utterance": "This is all too fast . He's my best friend , and now he's gone .",
+          "semantic_similarity": 0.8896600981161067,
+          "emotion_similarity": 0.9942690392913697,
+          "reranker_score": 0.9942690392913697,
+          "is_golden": false
+        },
+        {
+          "rank": 2,
+          "turn": 5,
+          "speaker": "A",
+          "utterance": "I'm sorry . I know it must have come as a great shock .",
+          "semantic_similarity": 0.8731308000943707,
+          "emotion_similarity": 0.9677815491606362,
+          "reranker_score": 0.9677815491606362,
+          "is_golden": false
+        },
+        {
+          "rank": 3,
+          "turn": 3,
+          "speaker": "A",
+          "utterance": "I'm afraid not . But at tomorrow's funeral , the family requested an open casket service .",
+          "semantic_similarity": 0.8966627404879575,
+          "emotion_similarity": 0.9379291444580309,
+          "reranker_score": 0.9379291444580309,
+          "is_golden": false
+        },
+        {
+          "rank": 4,
+          "turn": 2,
+          "speaker": "B",
+          "utterance": "But we just drove across town . Can't we just go in to see him one last ...",
+          "semantic_similarity": 0.890354108280327,
+          "emotion_similarity": 0.880990224105191,
+          "reranker_score": 0.880990224105191,
+          "is_golden": false
+        },
+        {
+          "rank": 5,
+          "turn": 1,
+          "speaker": "A",
+          "utterance": "I'm sorry , ladies . Mr . Smith's viewing is over . It ended an hour ago .",
+          "semantic_similarity": 0.9075993652288682,
+          "emotion_similarity": 0.5326546389127955,
+          "reranker_score": 0.5326546389127955,
+          "is_golden": true
+        }
+      ]
+    }
+  ]
+}
