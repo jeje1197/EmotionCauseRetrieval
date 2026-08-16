@@ -61,6 +61,12 @@ To customize the semantic/emotion weight sweep:
 python -m src.scripts.run_experiment --weights 1.0 0.75 0.5 0.25 0.0
 ```
 
+To map cosine similarities into `[0, 1]` instead of `[-1, 1]`:
+
+```bash
+python -m src.scripts.run_experiment --splits all --cosine-zero-one
+```
+
 To write outputs to a custom directory:
 
 ```bash
