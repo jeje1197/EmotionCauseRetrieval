@@ -66,6 +66,19 @@ maximum, mean, median, and all tied modes. Per-conversation count distributions
 include zeros. First-position distributions exclude conversations where no
 such position exists, and the report counts those exclusions.
 
+The report also estimates unique message turns to embed for all messages in
+eligible conversations, through the last qualifying target, and through the
+first qualifying target. These counts include target messages and all prior
+retrieval candidates, assume embeddings are reused, and do not subtract existing
+embeddings or count separate VAD-scoring calls. The JSON, written report, and
+charts include the same dataset metrics for both complete eligible
+conversations and first-target prefixes (every turn through the earliest
+qualifying target). These post-filter scopes include all messages in the scope,
+not only eligible targets. Prefix evidence is validated against the original
+full conversation: valid references beyond the prefix still count for evidence
+and sharing, but first-cause positions include only messages within the prefix.
+The count of valid references outside the scope is reported.
+
 Evidence fields are excluded from all cause analyses if they are not lists or
 contain any entry that is not an integer turn number in the conversation.
 This includes `"b"` and mixed valid/invalid lists; the whole field is excluded,
@@ -90,7 +103,9 @@ and `surprised` normalize to `anger`, `happiness`, `happiness`, `sadness`, and
 The original histograms remain at `data/output/conversation_length_histogram.png`,
 `data/output/evidence_message_histogram.png`, and
 `data/output/evidence_cause_histogram.png`. Additional count, position, evidence
-status, and emotion charts are saved beside the detailed report. Use `--data-dir`
+status, and emotion charts are saved beside the detailed report. The two
+post-filter scopes have matching charts in `eligible_conversations` and
+`first_target_prefixes` subdirectories of the analysis directory. Use `--data-dir`
 to select a directory containing the three `reccon_selected_<split>.json`
 files, `--analysis-dir` for the detailed report and additional charts, and
 `--output`, `--evidence-output`, or `--cause-output` to change the original

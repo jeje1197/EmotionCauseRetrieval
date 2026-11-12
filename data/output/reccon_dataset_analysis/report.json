@@ -1,0 +1,148 @@
+{
+  "definitions": {
+    "scope": "All turns in the selected train, valid, and test conversations.",
+    "cause_entries": "Evidence list entries, including repeated references and latent markers.",
+    "positions": "One-based turn numbers; first-cause positions exclude self-references and latent markers.",
+    "sharing": "A numbered cause is shared if it occurs in another message in the same conversation.",
+    "indeterminate": "A message with a latent marker and no shared numbered cause.",
+    "unique": "A message with neither a shared numbered cause nor a latent marker."
+  },
+  "total_conversations": 1106,
+  "total_messages": 11104,
+  "messages_with_nonempty_evidence": 5861,
+  "messages_with_empty_or_missing_evidence": 5243,
+  "messages_with_missing_evidence_field": 5243,
+  "messages_with_multiple_cause_entries": 2664,
+  "latent_cause_entries": 403,
+  "repeated_cause_entries_within_messages": 396,
+  "conversations_without_annotated_messages": 0,
+  "conversations_without_a_numbered_cause_of_another_message": 20,
+  "distributions": {
+    "messages_per_conversation": {
+      "count": 1106,
+      "min": 3,
+      "max": 31,
+      "mean": 10.039783001808319,
+      "median": 10.0,
+      "mode": [
+        8
+      ]
+    },
+    "causes_per_annotated_message": {
+      "count": 5861,
+      "min": 1,
+      "max": 11,
+      "mean": 1.6916908377409998,
+      "median": 1,
+      "mode": [
+        1
+      ]
+    },
+    "annotated_messages_per_conversation": {
+      "count": 1106,
+      "min": 1,
+      "max": 18,
+      "mean": 5.299276672694394,
+      "median": 4.0,
+      "mode": [
+        4
+      ]
+    },
+    "first_annotated_message_position": {
+      "count": 1106,
+      "min": 1,
+      "max": 17,
+      "mean": 2.418625678119349,
+      "median": 2.0,
+      "mode": [
+        1
+      ]
+    },
+    "first_cause_of_another_message_position": {
+      "count": 1086,
+      "min": 1,
+      "max": 16,
+      "mean": 2.685082872928177,
+      "median": 2.0,
+      "mode": [
+        1
+      ]
+    },
+    "shared_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 16,
+      "mean": 3.8110307414104883,
+      "median": 4.0,
+      "mode": [
+        4
+      ]
+    },
+    "unique_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 7,
+      "mean": 1.283001808318264,
+      "median": 1.0,
+      "mode": [
+        0
+      ]
+    },
+    "indeterminate_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 7,
+      "mean": 0.20524412296564196,
+      "median": 0.0,
+      "mode": [
+        0
+      ]
+    }
+  },
+  "shared_unique_in_conversations_with_multiple_annotated_messages": {
+    "shared": {
+      "count": 1097,
+      "min": 0,
+      "max": 16,
+      "mean": 3.8422971741112124,
+      "median": 4,
+      "mode": [
+        4
+      ]
+    },
+    "unique": {
+      "count": 1097,
+      "min": 0,
+      "max": 7,
+      "mean": 1.2853236098450318,
+      "median": 1,
+      "mode": [
+        0
+      ]
+    },
+    "indeterminate": {
+      "count": 1097,
+      "min": 0,
+      "max": 7,
+      "mean": 0.20692798541476753,
+      "median": 0,
+      "mode": [
+        0
+      ]
+    }
+  },
+  "annotated_messages_by_emotion": {
+    "anger": 450,
+    "angry": 1,
+    "disgust": 140,
+    "excited": 3,
+    "fear": 74,
+    "happines": 1,
+    "happiness": 4352,
+    "happy": 5,
+    "sad": 4,
+    "sadness": 347,
+    "surprise": 483,
+    "surprised": 1
+  }
+}

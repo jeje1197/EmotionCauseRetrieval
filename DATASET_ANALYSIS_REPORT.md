@@ -72,6 +72,95 @@ A conversation qualifies if any message meets all of these rules:
 | test | 120 | 185 |
 | **Total** | **557** | **979** |
 
+## Embedding estimates
+
+Counts are unique message turns, embedded once and reused; they include
+target queries and all earlier retrieval candidates. They do not reflect
+already-computed embeddings, retries, or separate VAD-scoring calls.
+
+| Scope | Train | Valid | Test | Total |
+|---|---:|---:|---:|---:|
+| All messages in eligible conversations | 4,706 | 235 | 1,453 | 6,394 |
+| Through last qualifying target (all targets) | 4,031 | 186 | 1,227 | 5,444 |
+| Through first qualifying target | 3,204 | 167 | 993 | 4,364 |
+| First target queries only | 417 | 20 | 120 | 557 |
+| Prior candidates for first targets | 2,787 | 147 | 873 | 3,807 |
+
+## Distributions after filtering
+
+Both scopes retain all messages in the stated scope, including non-target
+messages and their annotations. They do not restrict statistics to qualifying targets.
+The first-target prefix ends at the earliest qualifying target. Evidence is
+validated against the original full conversation, so a valid reference outside
+the prefix is not reclassified as invalid. Shared-cause counts use such references;
+first-cause positions count only cause messages included in the scope.
+
+### Complete eligible conversations
+
+- Conversations: 557; messages: 6,394.
+- Valid non-empty evidence: 3,102; empty or missing: 3,150; invalid excluded fields: 142.
+- Invalid list entries: 142; invalid fields containing valid entries: 65.
+- Valid messages with more than one cause entry: 1,093.
+- Valid cause entries outside the included turns: 0.
+
+| Distribution | Count | Min | Max | Mean | Median | Mode |
+|---|---:|---:|---:|---:|---:|---:|
+| Messages per conversation | 557 | 5 | 31 | 11.48 | 11 | 12 |
+| Cause entries per annotated message | 3102 | 1 | 8 | 1.49 | 1.00 | 1 |
+| Annotated messages per conversation | 557 | 1 | 18 | 5.57 | 5 | 4 |
+| First annotated message position | 557 | 1 | 17 | 3.12 | 2 | 1 |
+| First message causing another turn | 557 | 1 | 16 | 3.25 | 2 | 1 |
+| Shared-cause messages per conversation | 557 | 0 | 16 | 3.92 | 4 | 2 |
+| Unique-cause messages per conversation | 557 | 0 | 7 | 1.65 | 1 | 1 |
+| Shared-cause messages, multiple annotations | 552 | 0 | 16 | 3.95 | 4.00 | 2 |
+| Unique-cause messages, multiple annotations | 552 | 0 | 7 | 1.66 | 1.00 | 1 |
+
+First-annotation positions exclude 0 conversations; first-cause positions exclude 0.
+Shared/unique rows marked multiple annotations include only conversations with at least two valid annotated messages.
+
+| Normalized emotion | Annotated messages |
+|---|---:|
+| happiness | 2,404 |
+| surprise | 322 |
+| sadness | 169 |
+| anger | 143 |
+| disgust | 48 |
+| fear | 15 |
+| excited | 1 |
+
+### First-target prefixes
+
+- Conversations: 557; messages: 4,364.
+- Valid non-empty evidence: 2,013; empty or missing: 2,242; invalid excluded fields: 109.
+- Invalid list entries: 109; invalid fields containing valid entries: 43.
+- Valid messages with more than one cause entry: 588.
+- Valid cause entries outside the included turns: 0.
+
+| Distribution | Count | Min | Max | Mean | Median | Mode |
+|---|---:|---:|---:|---:|---:|---:|
+| Messages per conversation | 557 | 5 | 21 | 7.83 | 7 | 5 |
+| Cause entries per annotated message | 2013 | 1 | 6 | 1.37 | 1 | 1 |
+| Annotated messages per conversation | 557 | 1 | 13 | 3.61 | 3 | 3 |
+| First annotated message position | 557 | 1 | 17 | 3.12 | 2 | 1 |
+| First message causing another turn | 557 | 1 | 16 | 3.27 | 2 | 1 |
+| Shared-cause messages per conversation | 557 | 0 | 12 | 2.44 | 2 | 2 |
+| Unique-cause messages per conversation | 557 | 0 | 5 | 1.17 | 1 | 1 |
+| Shared-cause messages, multiple annotations | 507 | 0 | 12 | 2.68 | 2 | 2 |
+| Unique-cause messages, multiple annotations | 507 | 0 | 5 | 1.19 | 1 | 0 |
+
+First-annotation positions exclude 0 conversations; first-cause positions exclude 0.
+Shared/unique rows marked multiple annotations include only conversations with at least two valid annotated messages.
+
+| Normalized emotion | Annotated messages |
+|---|---:|
+| happiness | 1,511 |
+| surprise | 244 |
+| sadness | 116 |
+| anger | 96 |
+| disgust | 33 |
+| fear | 12 |
+| excited | 1 |
+
 ## Comparison with the current selector
 
 - Current selection yields 619 target/golden pairs

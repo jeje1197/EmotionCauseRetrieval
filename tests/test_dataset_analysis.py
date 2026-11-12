@@ -6,6 +6,7 @@ from pathlib import Path
 from src.scripts.dataset_analysis import (
     analyze_conversations,
     analyze_eligibility,
+    analyze_filtered_scopes,
     distribution,
     load_saved_experiment,
     render_markdown,
@@ -144,6 +145,11 @@ class DatasetAnalysisTests(unittest.TestCase):
             "qualifying_messages": 1,
             "selected_target_and_golden": 3,
             "selected_single_cause": 1,
+            "embed_all_messages": 6,
+            "embed_through_last_target": 6,
+            "embed_through_first_target": 6,
+            "first_targets": 1,
+            "first_target_prior_candidates": 5,
         })
         self.assertEqual(result["first_valid_annotation_after_turn_4"]["count"], 3)
         self.assertEqual(result["conversations_without_valid_annotation_after_turn_4"], 1)
@@ -154,6 +160,54 @@ class DatasetAnalysisTests(unittest.TestCase):
         self.assertIn("| **Total** | **1** | **1** |", text)
         self.assertIn("not a change to the pipeline selector", text)
         self.assertIn("No saved experiment results were supplied", text)
+
+    def test_filtered_scopes_and_embedding_counts(self):
+        turns = [
+            {"turn": i, "utterance": f"text {i}", "emotion": "joy"}
+            for i in range(1, 8)
+        ]
+        turns[1]["expanded emotion cause evidence"] = [7]
+        turns[2]["expanded emotion cause evidence"] = [7]
+        turns[4]["expanded emotion cause evidence"] = [1]
+        turns[6]["expanded emotion cause evidence"] = [2]
+        conversations = [
+            {"dataset_split": "train", "conversation_id": "eligible", "turns": turns},
+            {"dataset_split": "test", "conversation_id": "ineligible", "turns": [
+                {"turn": 1, "utterance": "text", "emotion": "neutral"},
+            ]},
+        ]
+        eligibility = analyze_eligibility(conversations)
+        totals = eligibility["totals"]
+        self.assertEqual(totals["qualifying_messages"], 2)
+        self.assertEqual(totals["embed_all_messages"], 7)
+        self.assertEqual(totals["embed_through_last_target"], 7)
+        self.assertEqual(totals["embed_through_first_target"], 5)
+        self.assertEqual(totals["first_targets"], 1)
+        self.assertEqual(totals["first_target_prior_candidates"], 4)
+        filtered, series = analyze_filtered_scopes(conversations)
+        full = filtered["eligible_conversations"]
+        prefix = filtered["first_target_prefixes"]
+        self.assertEqual(full["total_messages"], 7)
+        self.assertEqual(prefix["total_messages"], 5)
+        self.assertEqual(prefix["messages_with_nonempty_evidence"], 3)
+        self.assertEqual(prefix["excluded_invalid_evidence_fields"], 0)
+        self.assertEqual(prefix["valid_cause_entries_outside_included_turns"], 2)
+        self.assertEqual(series["first_target_prefixes"]["first_cause_of_another_message_position"], [1])
+        self.assertEqual(series["first_target_prefixes"]["shared_messages_per_conversation"], [2])
+        report, _ = analyze_conversations(conversations)
+        report["eligibility"] = eligibility
+        report["filtered_scopes"] = filtered
+        text = render_markdown(report)
+        self.assertIn("| Through first qualifying target | 5 | 0 | 0 | 5 |", text)
+        self.assertIn("### First-target prefixes", text)
+        self.assertIn("Valid cause entries outside the included turns: 2", text)
+
+    def test_no_eligible_conversations(self):
+        conversations = [{"dataset_split": "train", "conversation_id": "none", "turns": []}]
+        filtered, series = analyze_filtered_scopes(conversations)
+        self.assertEqual(filtered["eligible_conversations"]["total_conversations"], 0)
+        self.assertEqual(filtered["first_target_prefixes"]["distributions"]["messages_per_conversation"]["count"], 0)
+        self.assertEqual(series["first_target_prefixes"]["messages_per_conversation"], [])
 
     def test_saved_results_validation(self):
         with tempfile.TemporaryDirectory() as temporary:

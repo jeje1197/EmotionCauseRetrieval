@@ -64,8 +64,12 @@ def distribution(values: list[int]) -> dict:
     }
 
 
-def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, list[int]]]:
-    """Analyze complete conversations, excluding malformed evidence fields."""
+def analyze_conversations(
+    conversations: list[dict], *, reference_turn_ids: list[set[int]] | None = None,
+) -> tuple[dict, dict[str, list[int]]]:
+    """Analyze messages, validating references against their original conversations."""
+    if reference_turn_ids is not None and len(reference_turn_ids) != len(conversations):
+        raise ValueError("Reference turn sets must match the number of conversations")
     series: dict[str, list[int]] = {
         "messages_per_conversation": [],
         "causes_per_annotated_message": [],
@@ -85,8 +89,8 @@ def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, li
     invalid_reasons: Counter[str] = Counter()
     empty = missing = multiple = repeated_entries = invalid_fields = invalid_entries = 0
     invalid_fields_with_valid_entries = 0
-    no_annotated = no_other_cause = 0
-    for conversation in conversations:
+    no_annotated = no_other_cause = outside_scope_entries = 0
+    for index, conversation in enumerate(conversations):
         turns = conversation["turns"]
         context = f"conversation {conversation.get('conversation_id', '<unknown>')}"
         if any(not isinstance(turn, dict) for turn in turns):
@@ -94,6 +98,9 @@ def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, li
         ids = [turn.get("turn") for turn in turns]
         if any(type(number) is not int for number in ids) or sorted(ids) != list(range(1, len(turns) + 1)):
             raise ValueError(f"{context}: turn numbers must be unique and consecutive starting at 1")
+        valid_ids = reference_turn_ids[index] if reference_turn_ids is not None else set(ids)
+        if not set(ids).issubset(valid_ids):
+            raise ValueError(f"{context}: reference turn set must contain all included turns")
         annotated = []
         cause_positions = set()
         present = singles = multiples = 0
@@ -108,7 +115,7 @@ def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, li
                 invalid_fields += 1
                 invalid_reasons["field_not_list"] += 1
                 continue
-            bad = [cause for cause in evidence if type(cause) is not int or cause not in ids]
+            bad = [cause for cause in evidence if type(cause) is not int or cause not in valid_ids]
             if bad:
                 invalid_fields += 1
                 invalid_entries += len(bad)
@@ -128,7 +135,8 @@ def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, li
             emotion = EMOTION_ALIASES.get(emotion, emotion)
             numbered = set(evidence)
             repeated_entries += len(evidence) - len(set(evidence))
-            cause_positions.update(cause for cause in numbered if cause != number)
+            outside_scope_entries += sum(cause not in ids for cause in evidence)
+            cause_positions.update(cause for cause in numbered if cause != number and cause in ids)
             series["causes_per_annotated_message"].append(len(evidence))
             multiple += len(evidence) > 1
             singles += len(evidence) == 1
@@ -164,11 +172,11 @@ def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, li
 
     report = {
         "definitions": {
-            "scope": "All turns in the selected train, valid, and test conversations.",
+            "scope": "Included turns in the analyzed conversations.",
             "cause_entries": "Entries in valid evidence lists, including repeated turn references.",
             "invalid_fields": "Entire evidence fields are excluded if not lists or if any entry is not an integer turn number in the conversation. Messages remain in conversation and message totals.",
             "emotion": "Labels are trimmed, lowercased, and normalized using emotion_aliases; excited remains separate.",
-            "positions": "One-based turn numbers; first-cause positions exclude self-references.",
+            "positions": "One-based turn numbers; first-cause positions exclude self-references and causes outside the included turns.",
             "sharing": "A numbered cause is shared if it occurs in another message in the same conversation.",
             "unique": "A message with no shared numbered cause.",
         },
@@ -184,6 +192,7 @@ def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, li
         "excluded_invalid_fields_with_valid_entries": invalid_fields_with_valid_entries,
         "excluded_invalid_reasons": dict(sorted(invalid_reasons.items())),
         "repeated_cause_entries_within_messages": repeated_entries,
+        "valid_cause_entries_outside_included_turns": outside_scope_entries,
         "conversations_without_annotated_messages": no_annotated,
         "conversations_without_a_numbered_cause_of_another_message": no_other_cause,
         "distributions": {key: distribution(values) for key, values in series.items()},
@@ -197,12 +206,31 @@ def analyze_conversations(conversations: list[dict]) -> tuple[dict, dict[str, li
     return report, series
 
 
+def qualifying_targets(conversation: dict) -> list[dict]:
+    by_turn = {turn["turn"]: turn for turn in conversation["turns"]}
+    qualifying = []
+    for turn in conversation["turns"]:
+        evidence = turn.get(EVIDENCE_FIELD, [])
+        if (
+            turn["turn"] < 5 or not isinstance(evidence, list) or len(evidence) != 1
+            or type(evidence[0]) is not int or evidence[0] not in by_turn
+            or evidence[0] >= turn["turn"]
+        ):
+            continue
+        utterance = by_turn[evidence[0]].get("utterance")
+        if isinstance(utterance, str) and utterance.strip():
+            qualifying.append(turn)
+    return qualifying
+
+
 def analyze_eligibility(conversations: list[dict]) -> dict:
     """Compare proposed pre-embedding eligibility with the current selector."""
     keys = (
         "conversations", "valid_annotation_after_turn_4", "single_cause_after_turn_4",
         "single_previous_cause_after_turn_4", "nonempty_cause_utterance",
         "qualifying_messages", "selected_target_and_golden", "selected_single_cause",
+        "embed_all_messages", "embed_through_last_target", "embed_through_first_target",
+        "first_targets", "first_target_prior_candidates",
     )
     by_split = {split: dict.fromkeys(keys, 0) for split in SPLITS}
     first_positions: list[int] = []
@@ -231,13 +259,17 @@ def analyze_eligibility(conversations: list[dict]) -> dict:
             turn for turn in single if turn[EVIDENCE_FIELD][0] < turn["turn"]
         ]
         counts["single_previous_cause_after_turn_4"] += bool(previous)
-        qualifying = [
-            turn for turn in previous
-            if isinstance(by_turn[turn[EVIDENCE_FIELD][0]].get("utterance"), str)
-            and by_turn[turn[EVIDENCE_FIELD][0]]["utterance"].strip()
-        ]
+        qualifying = qualifying_targets(conversation)
         counts["nonempty_cause_utterance"] += bool(qualifying)
         counts["qualifying_messages"] += len(qualifying)
+        if qualifying:
+            first = min(turn["turn"] for turn in qualifying)
+            last = max(turn["turn"] for turn in qualifying)
+            counts["embed_all_messages"] += len(turns)
+            counts["embed_through_last_target"] += sum(turn["turn"] <= last for turn in turns)
+            counts["embed_through_first_target"] += sum(turn["turn"] <= first for turn in turns)
+            counts["first_targets"] += 1
+            counts["first_target_prior_candidates"] += sum(turn["turn"] < first for turn in turns)
 
         selected = select_turns_for_conversation(conversation)
         target = selected["target_turn"]
@@ -251,6 +283,36 @@ def analyze_eligibility(conversations: list[dict]) -> dict:
         "first_valid_annotation_after_turn_4": distribution(first_positions),
         "conversations_without_valid_annotation_after_turn_4": len(conversations) - len(first_positions),
     }
+
+
+def analyze_filtered_scopes(conversations: list[dict]) -> tuple[dict, dict]:
+    """Analyze full eligible conversations and their first-target prefixes."""
+    eligible = []
+    prefixes = []
+    reference_ids = []
+    for conversation in conversations:
+        targets = qualifying_targets(conversation)
+        if not targets:
+            continue
+        first = min(turn["turn"] for turn in targets)
+        eligible.append(conversation)
+        prefixes.append({
+            **conversation,
+            "turns": [turn for turn in conversation["turns"] if turn["turn"] <= first],
+        })
+        reference_ids.append({turn["turn"] for turn in conversation["turns"]})
+    full_report, full_series = analyze_conversations(eligible)
+    prefix_report, prefix_series = analyze_conversations(prefixes, reference_turn_ids=reference_ids)
+    full_report["definitions"]["scope"] = "All messages in conversations with a qualifying target."
+    prefix_report["definitions"]["scope"] = "Messages through the first qualifying target in each eligible conversation."
+    prefix_report["definitions"]["reference_validation"] = (
+        "Evidence is validated against the original full conversation, including turns outside the prefix. "
+        "Sharing uses all valid references; first-cause positions require the cause turn to be in the prefix."
+    )
+    return (
+        {"eligible_conversations": full_report, "first_target_prefixes": prefix_report},
+        {"eligible_conversations": full_series, "first_target_prefixes": prefix_series},
+    )
 
 
 def load_saved_experiment(results_dir: Path) -> dict:
@@ -271,6 +333,63 @@ def load_saved_experiment(results_dir: Path) -> dict:
         "by_split": by_split,
         "evaluated_conversations": sum(item["evaluated_conversations"] for item in by_split.values()),
     }
+
+
+def format_stat(value: object) -> str:
+    if value is None:
+        return "N/A"
+    if isinstance(value, list):
+        return ", ".join(map(str, value)) or "N/A"
+    if isinstance(value, float):
+        return f"{value:.2f}"
+    return str(value)
+
+
+def render_filtered_scope(title: str, report: dict) -> list[str]:
+    lines = [
+        f"### {title}", "",
+        f"- Conversations: {report['total_conversations']:,}; messages: {report['total_messages']:,}.",
+        f"- Valid non-empty evidence: {report['messages_with_nonempty_evidence']:,}; "
+        f"empty or missing: {report['messages_with_empty_or_missing_evidence']:,}; "
+        f"invalid excluded fields: {report['excluded_invalid_evidence_fields']:,}.",
+        f"- Invalid list entries: {report['excluded_invalid_list_entries']:,}; invalid fields containing "
+        f"valid entries: {report['excluded_invalid_fields_with_valid_entries']:,}.",
+        f"- Valid messages with more than one cause entry: {report['messages_with_multiple_cause_entries']:,}.",
+        f"- Valid cause entries outside the included turns: {report['valid_cause_entries_outside_included_turns']:,}.",
+        "",
+        "| Distribution | Count | Min | Max | Mean | Median | Mode |",
+        "|---|---:|---:|---:|---:|---:|---:|",
+    ]
+    dist = report["distributions"]
+    eligible = report["shared_unique_in_conversations_with_multiple_annotated_messages"]
+    for label, stats in [
+        ("Messages per conversation", dist["messages_per_conversation"]),
+        ("Cause entries per annotated message", dist["causes_per_annotated_message"]),
+        ("Annotated messages per conversation", dist["annotated_messages_per_conversation"]),
+        ("First annotated message position", dist["first_annotated_message_position"]),
+        ("First message causing another turn", dist["first_cause_of_another_message_position"]),
+        ("Shared-cause messages per conversation", dist["shared_messages_per_conversation"]),
+        ("Unique-cause messages per conversation", dist["unique_messages_per_conversation"]),
+        ("Shared-cause messages, multiple annotations", eligible["shared"]),
+        ("Unique-cause messages, multiple annotations", eligible["unique"]),
+    ]:
+        lines.append(
+            f"| {label} | " + " | ".join(
+                format_stat(stats[key]) for key in ("count", "min", "max", "mean", "median", "mode")
+            ) + " |"
+        )
+    lines.extend([
+        "",
+        f"First-annotation positions exclude {report['conversations_without_annotated_messages']} conversations; "
+        f"first-cause positions exclude {report['conversations_without_a_numbered_cause_of_another_message']}.",
+        "Shared/unique rows marked multiple annotations include only conversations with at least two valid annotated messages.",
+        "",
+        "| Normalized emotion | Annotated messages |",
+        "|---|---:|",
+    ])
+    for emotion, count in sorted(report["annotated_messages_by_emotion"].items(), key=lambda item: (-item[1], item[0])):
+        lines.append(f"| {emotion} | {count:,} |")
+    return lines
 
 
 def render_markdown(report: dict) -> str:
@@ -314,17 +433,9 @@ def render_markdown(report: dict) -> str:
         ("First valid annotated message after turn 4", eligibility["first_valid_annotation_after_turn_4"]),
     ]
     for label, stats in distributions:
-        def display(value: object) -> str:
-            if value is None:
-                return "N/A"
-            if isinstance(value, list):
-                return ", ".join(map(str, value)) or "N/A"
-            if isinstance(value, float):
-                return f"{value:.2f}"
-            return str(value)
         lines.append(
             f"| {label} | " + " | ".join(
-                display(stats[key]) for key in ("count", "min", "max", "mean", "median", "mode")
+                format_stat(stats[key]) for key in ("count", "min", "max", "mean", "median", "mode")
             ) + " |"
         )
     lines.extend([
@@ -369,6 +480,41 @@ def render_markdown(report: dict) -> str:
         lines.append(f"| {split} | {counts['nonempty_cause_utterance']:,} | {counts['qualifying_messages']:,} |")
     lines.extend([
         f"| **Total** | **{totals['nonempty_cause_utterance']:,}** | **{totals['qualifying_messages']:,}** |",
+        "",
+        "## Embedding estimates",
+        "",
+        "Counts are unique message turns, embedded once and reused; they include",
+        "target queries and all earlier retrieval candidates. They do not reflect",
+        "already-computed embeddings, retries, or separate VAD-scoring calls.",
+        "",
+        "| Scope | Train | Valid | Test | Total |",
+        "|---|---:|---:|---:|---:|",
+    ])
+    for label, key in [
+        ("All messages in eligible conversations", "embed_all_messages"),
+        ("Through last qualifying target (all targets)", "embed_through_last_target"),
+        ("Through first qualifying target", "embed_through_first_target"),
+        ("First target queries only", "first_targets"),
+        ("Prior candidates for first targets", "first_target_prior_candidates"),
+    ]:
+        counts = eligibility["by_split"]
+        lines.append(
+            f"| {label} | " + " | ".join(f"{counts[split][key]:,}" for split in SPLITS)
+            + f" | {totals[key]:,} |"
+        )
+    if "filtered_scopes" in report:
+        lines.extend([
+            "", "## Distributions after filtering", "",
+            "Both scopes retain all messages in the stated scope, including non-target",
+            "messages and their annotations. They do not restrict statistics to qualifying targets.",
+            "The first-target prefix ends at the earliest qualifying target. Evidence is",
+            "validated against the original full conversation, so a valid reference outside",
+            "the prefix is not reclassified as invalid. Shared-cause counts use such references;",
+            "first-cause positions count only cause messages included in the scope.",
+        ])
+        lines.extend([""] + render_filtered_scope("Complete eligible conversations", report["filtered_scopes"]["eligible_conversations"]))
+        lines.extend([""] + render_filtered_scope("First-target prefixes", report["filtered_scopes"]["first_target_prefixes"]))
+    lines.extend([
         "",
         "## Comparison with the current selector",
         "",
@@ -453,7 +599,7 @@ def save_cause_histogram(
         ("Exactly 1 annotated cause", Counter(single_counts)),
         ("2 or more annotated causes", Counter(multiple_counts)),
     ]
-    max_count = max(max(counts) for _, counts in distributions)
+    max_count = max((max(counts, default=0) for _, counts in distributions), default=0)
     positions = range(max_count + 1)
     figure, axis = plt.subplots(figsize=(11, 6))
     for offset, (label, counts) in enumerate(distributions):
@@ -534,6 +680,16 @@ def main() -> None:
         args.analysis_dir / "annotated_messages_by_emotion.png",
         *(args.analysis_dir / f"{key}.png" for key in histogram_specs),
     ]
+    filtered_chart_names = [
+        "conversation_length_histogram.png", "evidence_message_histogram.png",
+        "evidence_cause_histogram.png", "evidence_status.png", "annotated_messages_by_emotion.png",
+        *(f"{key}.png" for key in histogram_specs),
+    ]
+    outputs.extend(
+        args.analysis_dir / scope / name
+        for scope in ("eligible_conversations", "first_target_prefixes")
+        for name in filtered_chart_names
+    )
     if len({path.resolve() for path in outputs}) != len(outputs):
         parser.error("All report and histogram output paths must be different")
 
@@ -546,6 +702,7 @@ def main() -> None:
     conversations = load_conversations(args.data_dir)
     report, series = analyze_conversations(conversations)
     report["eligibility"] = analyze_eligibility(conversations)
+    report["filtered_scopes"], filtered_series = analyze_filtered_scopes(conversations)
     if args.saved_results_dir is not None:
         report["saved_experiment"] = load_saved_experiment(args.saved_results_dir)
     lengths = series["messages_per_conversation"]
@@ -595,6 +752,41 @@ def main() -> None:
         args.analysis_dir / "annotated_messages_by_emotion.png",
         title="Messages with emotion causes by emotion", xlabel="Emotion",
     )
+    for scope, scope_series in filtered_series.items():
+        scope_path = args.analysis_dir / scope
+        scope_report = report["filtered_scopes"][scope]
+        save_histogram(
+            scope_series["messages_per_conversation"], scope_path / "conversation_length_histogram.png",
+            xlabel="Number of messages in a conversation", title=f"Conversation lengths: {scope}",
+        )
+        save_histogram(
+            scope_series["valid_evidence_fields_per_conversation"], scope_path / "evidence_message_histogram.png",
+            xlabel="Messages with a valid evidence field per conversation", title=f"Valid evidence fields: {scope}",
+        )
+        save_cause_histogram(
+            scope_series["annotated_messages_per_conversation"],
+            scope_series["single_cause_messages_per_conversation"],
+            scope_series["multiple_cause_messages_per_conversation"],
+            scope_path / "evidence_cause_histogram.png",
+        )
+        for key, (title, ylabel) in histogram_specs.items():
+            save_histogram(
+                scope_series[key], scope_path / f"{key}.png",
+                xlabel=title, title=title, ylabel=ylabel,
+            )
+        save_category_chart(
+            {
+                "Non-empty": scope_report["messages_with_nonempty_evidence"],
+                "Empty or missing": scope_report["messages_with_empty_or_missing_evidence"],
+                "Invalid / excluded": scope_report["excluded_invalid_evidence_fields"],
+            },
+            scope_path / "evidence_status.png",
+            title=f"Messages by evidence status: {scope}", xlabel="Evidence status",
+        )
+        save_category_chart(
+            scope_report["annotated_messages_by_emotion"], scope_path / "annotated_messages_by_emotion.png",
+            title=f"Annotated messages by emotion: {scope}", xlabel="Emotion",
+        )
     args.analysis_dir.mkdir(parents=True, exist_ok=True)
     report_path = args.analysis_dir / "report.json"
     with report_path.open("w", encoding="utf-8") as handle:

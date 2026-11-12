@@ -1,0 +1,166 @@
+{
+  "definitions": {
+    "scope": "All turns in the selected train, valid, and test conversations.",
+    "cause_entries": "Entries in valid evidence lists, including repeated turn references.",
+    "invalid_fields": "Entire evidence fields are excluded if not lists or if any entry is not an integer turn number in the conversation. Messages remain in conversation and message totals.",
+    "emotion": "Labels are trimmed, lowercased, and normalized using emotion_aliases; excited remains separate.",
+    "positions": "One-based turn numbers; first-cause positions exclude self-references.",
+    "sharing": "A numbered cause is shared if it occurs in another message in the same conversation.",
+    "unique": "A message with no shared numbered cause."
+  },
+  "emotion_aliases": {
+    "angry": "anger",
+    "happines": "happiness",
+    "happy": "happiness",
+    "sad": "sadness",
+    "surprised": "surprise"
+  },
+  "total_conversations": 1106,
+  "total_messages": 11104,
+  "messages_with_nonempty_evidence": 5466,
+  "messages_with_empty_or_missing_evidence": 5243,
+  "messages_with_missing_evidence_field": 5243,
+  "messages_with_multiple_cause_entries": 2460,
+  "excluded_invalid_evidence_fields": 395,
+  "excluded_invalid_list_entries": 403,
+  "excluded_invalid_fields_with_valid_entries": 204,
+  "excluded_invalid_reasons": {
+    "non_integer_entry": 403
+  },
+  "repeated_cause_entries_within_messages": 380,
+  "conversations_without_annotated_messages": 13,
+  "conversations_without_a_numbered_cause_of_another_message": 38,
+  "distributions": {
+    "messages_per_conversation": {
+      "count": 1106,
+      "min": 3,
+      "max": 31,
+      "mean": 10.039783001808319,
+      "median": 10.0,
+      "mode": [
+        8
+      ]
+    },
+    "causes_per_annotated_message": {
+      "count": 5466,
+      "min": 1,
+      "max": 11,
+      "mean": 1.6831320892791803,
+      "median": 1.0,
+      "mode": [
+        1
+      ]
+    },
+    "annotated_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 18,
+      "mean": 4.942133815551537,
+      "median": 4.0,
+      "mode": [
+        4
+      ]
+    },
+    "valid_evidence_fields_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 18,
+      "mean": 4.942133815551537,
+      "median": 4.0,
+      "mode": [
+        4
+      ]
+    },
+    "single_cause_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 13,
+      "mean": 2.7179023508137434,
+      "median": 2.0,
+      "mode": [
+        2
+      ]
+    },
+    "multiple_cause_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 13,
+      "mean": 2.2242314647377937,
+      "median": 2.0,
+      "mode": [
+        2
+      ]
+    },
+    "first_annotated_message_position": {
+      "count": 1093,
+      "min": 1,
+      "max": 17,
+      "mean": 2.67612076852699,
+      "median": 2,
+      "mode": [
+        1
+      ]
+    },
+    "first_cause_of_another_message_position": {
+      "count": 1068,
+      "min": 1,
+      "max": 16,
+      "mean": 2.7191011235955056,
+      "median": 2.0,
+      "mode": [
+        1
+      ]
+    },
+    "shared_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 16,
+      "mean": 3.634719710669078,
+      "median": 4.0,
+      "mode": [
+        4
+      ]
+    },
+    "unique_messages_per_conversation": {
+      "count": 1106,
+      "min": 0,
+      "max": 7,
+      "mean": 1.3074141048824592,
+      "median": 1.0,
+      "mode": [
+        0
+      ]
+    }
+  },
+  "shared_unique_in_conversations_with_multiple_annotated_messages": {
+    "shared": {
+      "count": 1075,
+      "min": 0,
+      "max": 16,
+      "mean": 3.73953488372093,
+      "median": 4,
+      "mode": [
+        4
+      ]
+    },
+    "unique": {
+      "count": 1075,
+      "min": 0,
+      "max": 7,
+      "mean": 1.3283720930232559,
+      "median": 1,
+      "mode": [
+        0
+      ]
+    }
+  },
+  "annotated_messages_by_emotion": {
+    "anger": 423,
+    "disgust": 135,
+    "excited": 3,
+    "fear": 59,
+    "happiness": 4039,
+    "sadness": 339,
+    "surprise": 468
+  }
+}
