@@ -40,29 +40,61 @@ selected split files:
 python -m src.scripts.dataset_analysis
 ```
 
-The script prints the total number of conversations and the mean, median, and
-mode of their message counts. It also reports the total number of messages
-containing the `expanded emotion cause evidence` field and the mean, median,
-and mode of those message counts per conversation. A message is counted once
-when the field is present, regardless of how many evidence entries it contains;
-conversations without such messages count as zero. All modes are reported if
-there is a tie.
+The selected files retain complete conversations and their annotations; the
+analysis includes every turn, not just turns selected for an experiment.
+It prints and writes `data/output/reccon_dataset_analysis_valid/report.json` with
+combined conversation and message totals, message-count distributions, evidence
+status and cause-entry counts, per-conversation annotated-message counts, first
+annotated-message and cause-message positions, shared and unique cause counts,
+annotated-message counts by emotion, and a pre-embedding eligibility funnel.
+It also writes a human-readable `report.md` in the analysis directory.
+Use `--markdown-report` to choose another path. To include counts from an
+existing saved run in the comparison, pass `--saved-results-dir` containing
+`results_<split>_100_0.json` for each split. The saved results are post-embedding
+counts, not pre-embedding eligibility counts. For example:
 
-The script also reports totals and per-conversation mean, median, and mode for
-messages with non-empty evidence, exactly one cause, and multiple causes.
-Causes are counted as entries in the evidence list; empty lists and missing
-fields do not count as non-empty evidence. Each per-conversation statistic
-includes conversations with zero matching messages.
+```bash
+python -m src.scripts.dataset_analysis --saved-results-dir data/output --markdown-report DATASET_ANALYSIS_REPORT.md
+```
 
-The histograms are saved to `data/output/conversation_length_histogram.png`,
+The eligibility funnel counts conversations with any valid message at turn 5
+or later, then those with one cause entry, a strictly earlier cause turn, and a
+non-empty cause utterance. This is a proposed filter only; it does not change
+the current selector. The report compares those counts to the selector's
+current behavior. Distributions include count, minimum,
+maximum, mean, median, and all tied modes. Per-conversation count distributions
+include zeros. First-position distributions exclude conversations where no
+such position exists, and the report counts those exclusions.
+
+Evidence fields are excluded from all cause analyses if they are not lists or
+contain any entry that is not an integer turn number in the conversation.
+This includes `"b"` and mixed valid/invalid lists; the whole field is excluded,
+not just its invalid entries. The report separately counts excluded fields,
+invalid entries in lists, fields containing both valid and invalid entries,
+and exclusion reasons. Excluded fields are not counted as empty or missing.
+Messages with excluded evidence remain in the conversation and message totals.
+Valid evidence counts use list entries, including repeated turn references.
+Missing and empty evidence fields both count as empty; missing fields are also
+reported separately. Positions are one-based turn numbers. A cause position for
+another message must reference a different turn; self-references are excluded.
+
+For shared and unique counts, messages share a cause if their evidence lists
+reference at least one common numbered turn; duplicates in one message do not
+make it shared. A message with no shared cause is unique. The report includes both
+all-conversation distributions and distributions restricted to conversations
+with at least two annotated messages; the latter also include zero counts.
+Emotion labels are trimmed and lowercased; `angry`, `happines`, `happy`, `sad`,
+and `surprised` normalize to `anger`, `happiness`, `happiness`, `sadness`, and
+`surprise`, respectively. `excited` remains separate.
+
+The original histograms remain at `data/output/conversation_length_histogram.png`,
 `data/output/evidence_message_histogram.png`, and
-`data/output/evidence_cause_histogram.png`. The last plot compares the number of
-messages per conversation with any annotated cause, exactly one cause, or two
-or more causes. These categories overlap: the first includes the other two.
-The bars count messages, not individual message-cause pairs. Use `--data-dir` to choose another directory
-containing the three `reccon_selected_<split>.json` files, `--output` to change
-the conversation-length histogram path, `--evidence-output` to change the
-field-presence histogram path, and `--cause-output` to change the new plot path.
+`data/output/evidence_cause_histogram.png`. Additional count, position, evidence
+status, and emotion charts are saved beside the detailed report. Use `--data-dir`
+to select a directory containing the three `reccon_selected_<split>.json`
+files, `--analysis-dir` for the detailed report and additional charts, and
+`--output`, `--evidence-output`, or `--cause-output` to change the original
+histogram paths.
 
 ## VAD stability
 
