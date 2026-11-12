@@ -44,7 +44,7 @@ def needs_vad_scores(turn: dict[str, Any]) -> bool:
     # If a force flag is set on the turn, honor it and recompute VAD.
     if turn.get("_force_vad"):
         return True
-    vad_scores = turn.get("vad_scores")
+    vad_scores = turn.get("vad_scores_1")
     return not isinstance(vad_scores, dict) or len(vad_scores) == 0
 
 
@@ -105,7 +105,6 @@ def _embed_chunk(
             # semantic_embedding already set above if needed
             if needs_semantic_embedding(turn):
                 start_time = time.perf_counter()
-                semantic_calls += 1
                 turn["semantic_embedding"] = retry_call(
                     create_embedding,
                     max_retries=max_retries,
@@ -119,8 +118,7 @@ def _embed_chunk(
 
             if needs_vad_scores(turn):
                 start_time = time.perf_counter()
-                vad_calls += 1
-                turn["vad_scores"] = retry_call(
+                turn["vad_scores_1"] = retry_call(
                     score_vad,
                     max_retries=max_retries,
                     initial_delay=initial_delay,
@@ -214,6 +212,10 @@ def embed_dataset(
         output_path = _default_output_path(input_path, only_semantic=only_semantic, vad_only=vad_only)
 
     dataset = load_json(input_path)
+    for conversation in dataset:
+        for turn in conversation.get("turns", []):
+            if turn.get("vad_scores") in (None, [], {}):
+                turn.pop("vad_scores", None)
     tasks: list[tuple[int, int, dict[str, Any]]] = []
     for conversation_index, conversation in enumerate(dataset):
         # Filter by dataset split when requested (e.g. 'train' or 'dev')
@@ -388,7 +390,7 @@ def embed_dataset(
                             dataset[conv_idx]["turns"][turn_idx]["_embedding_error"] = res["error"]
                             local_failed.append({"conversation_index": conv_idx, "turn_index": turn_idx, "error": res["error"]})
                         else:
-                            dataset[conv_idx]["turns"][turn_idx]["vad_scores"] = res
+                            dataset[conv_idx]["turns"][turn_idx]["vad_scores_1"] = res
                             dataset[conv_idx]["turns"][turn_idx].pop("_embedding_error", None)
                             print(f"Assigned VAD for conv={conv_id} turn={turn_idx}")
                     else:
@@ -483,6 +485,10 @@ def repair_embeddings(
         output_path = DATA_DIR / EMBEDDED_FILENAME
 
     dataset = load_json(input_path)
+    for conversation in dataset:
+        for turn in conversation.get("turns", []):
+            if turn.get("vad_scores") in (None, [], {}):
+                turn.pop("vad_scores", None)
     tasks: list[tuple[int, int, dict[str, Any]]] = []
     for conversation_index, conversation in enumerate(dataset):
         target_turn = _parse_int(conversation.get("target_turn"))

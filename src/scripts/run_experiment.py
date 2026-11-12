@@ -89,7 +89,12 @@ def load_conversations(path: Path) -> list[Conversation]:
                         semantic_embedding.append(float(value))
 
             vad_scores = None
-            raw_vad = turn.get("vad_scores")
+            raw_vad = turn.get("vad_scores_1")
+            if not raw_vad and turn.get("vad_scores"):
+                raise ValueError(
+                    f"{path}: legacy vad_scores found without vad_scores_1; "
+                    "regenerate VAD scores using the numbered schema before evaluation."
+                )
             if isinstance(raw_vad, dict):
                 try:
                     vad_scores = VadScores(
@@ -206,6 +211,7 @@ def get_valid_conversations(dataset: list[Conversation]) -> list[Conversation]:
         if any(
             not turn.semantic_embedding or turn.vad_scores is None
             for turn in conversation.turns
+            if turn.turn <= conversation.target_turn
         ):
             continue
         valid_conversations.append(conversation)

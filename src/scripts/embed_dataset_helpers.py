@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -57,7 +58,7 @@ def validate_vad_scores(vad_scores: Any) -> dict[str, float]:
         if key not in vad_scores:
             raise ValueError(f"VAD response missing key: {key}")
         value = vad_scores[key]
-        if not isinstance(value, (int, float)):
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
             raise ValueError(f"VAD value for {key} must be numeric.")
         if value < -1.0 or value > 1.0:
             raise ValueError(f"VAD value for {key} must be between -1 and 1.")
@@ -94,8 +95,17 @@ def score_vad(client: GeminiClient, text: str) -> dict[str, float]:
     }
     # Use Gemini 3 Flash Preview for VAD scoring
     vad_model = "gemini-3-flash-preview"
-    result = client.generate_structured_json(VAD_PROMPT.format(user_query=text), schema, model=vad_model)
-    return validate_vad_scores({key: float(value) for key, value in result.items()})
+    result = client.generate_structured_json(
+        VAD_PROMPT.format(user_query=text),
+        schema,
+        model=vad_model,
+        temperature=0.0,
+        seed=0,
+        top_p=0.95,
+        thinking_level="minimal",
+        max_output_tokens=1024,
+    )
+    return validate_vad_scores(result)
 
 
 def count_embeddings(dataset: list[dict]) -> tuple[int, int, int]:
@@ -107,7 +117,7 @@ def count_embeddings(dataset: list[dict]) -> tuple[int, int, int]:
             total_turns += 1
             if turn.get("semantic_embedding"):
                 semantic_success += 1
-            if turn.get("vad_scores"):
+            if turn.get("vad_scores_1"):
                 vad_success += 1
     return total_turns, semantic_success, vad_success
 
@@ -140,5 +150,5 @@ def validate_embedded_dataset(path: Path) -> None:
             if require_check:
                 if not turn.get("semantic_embedding"):
                     raise ValueError("Each required turn must include a non-empty semantic_embedding.")
-                if not turn.get("vad_scores"):
-                    raise ValueError("Each required turn must include non-empty vad_scores.")
+                if not turn.get("vad_scores_1"):
+                    raise ValueError("Each required turn must include non-empty vad_scores_1.")

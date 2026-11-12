@@ -5,6 +5,7 @@ from typing import Any, Dict, Iterable, List
 
 from google import genai
 from google.genai import types
+from google.genai.interactions import GenerationConfigParam, ThinkingLevel
 
 
 class GeminiClient:
@@ -12,12 +13,28 @@ class GeminiClient:
         self.client = genai.Client()
         self.model = model
 
-    def generate_structured_json(self, prompt: str, schema: Dict[str, Any], model: str | None = None) -> Any:
+    def generate_structured_json(
+        self, prompt: str, schema: Dict[str, Any], model: str | None = None,
+        *, temperature: float | None = None, seed: int | None = None,
+        top_p: float | None = None, thinking_level: ThinkingLevel | None = None,
+        max_output_tokens: int | None = None,
+    ) -> Any:
         """Generate structured JSON using the interactions API.
 
         The `model` parameter can override the client's default model for
         use-cases like structured VAD scoring.
         """
+        generation_config: GenerationConfigParam = {}
+        if temperature is not None:
+            generation_config["temperature"] = temperature
+        if seed is not None:
+            generation_config["seed"] = seed
+        if top_p is not None:
+            generation_config["top_p"] = top_p
+        if thinking_level is not None:
+            generation_config["thinking_level"] = thinking_level
+        if max_output_tokens is not None:
+            generation_config["max_output_tokens"] = max_output_tokens
         interaction = self.client.interactions.create(
             model=model or self.model,
             input=prompt,
@@ -26,6 +43,7 @@ class GeminiClient:
                 "mime_type": "application/json",
                 "schema": schema,
             },
+            generation_config=generation_config,
         )
 
         output_text = getattr(interaction, "output_text", None)

@@ -63,8 +63,8 @@ def validate_formatted_dataset(path: Path) -> None:
                 raise ValueError("Each turn must be a dictionary.")
             if "semantic_embedding" not in turn or not isinstance(turn["semantic_embedding"], list):
                 raise ValueError("Each turn must include a semantic_embedding list.")
-            if "vad_scores" not in turn or not isinstance(turn["vad_scores"], list):
-                raise ValueError("Each turn must include a vad_scores list.")
+            if "vad_scores_1" not in turn or not isinstance(turn["vad_scores_1"], list):
+                raise ValueError("Each turn must include a vad_scores_1 list.")
             if "has_multiple_causes" not in turn or not isinstance(turn["has_multiple_causes"], bool):
                 raise ValueError("Each turn must include a has_multiple_causes boolean.")
 
@@ -89,12 +89,13 @@ def normalize_conversation(
     normalized_turns: list[dict[str, Any]] = []
     for turn in turns:
         normalized_turn = dict(turn)
+        normalized_turn.pop("vad_scores", None)
         evidence = normalized_turn.get("expanded emotion cause evidence")
         normalized_turn["has_multiple_causes"] = (
             isinstance(evidence, list) and len(evidence) > 1
         )
         normalized_turn["semantic_embedding"] = []
-        normalized_turn["vad_scores"] = []
+        normalized_turn["vad_scores_1"] = []
         normalized_turns.append(normalized_turn)
 
     return {

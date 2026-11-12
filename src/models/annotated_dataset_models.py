@@ -44,7 +44,7 @@ class ConversationTurn:
             utterance=str(data.get("utterance", "")),
             emotion=str(data.get("emotion", "")),
             semantic_embedding=[float(value) for value in data.get("semantic_embedding", [])],
-            vad_scores=VadScores.from_dict(data["vad_scores"]) if data.get("vad_scores") else None,
+            vad_scores=VadScores.from_dict(data["vad_scores_1"]) if data.get("vad_scores_1") else None,
             expanded_emotion_cause_evidence=[int(value) for value in data.get("expanded emotion cause evidence", [])] if data.get("expanded emotion cause evidence") else None,
             expanded_emotion_cause_span=[str(value) for value in data.get("expanded emotion cause span", [])] if data.get("expanded emotion cause span") else None,
             explanation=str(data.get("explanation")) if data.get("explanation") is not None else None,
