@@ -1,0 +1,92 @@
+{
+  "total_turns": 435,
+  "complete_turns": 435,
+  "incomplete_turns": 0,
+  "runs": {
+    "vad_scores_1": {
+      "count": 435,
+      "dimensions": {
+        "valence": {
+          "mean": 0.30970114942528737,
+          "population_stddev": 0.4547599117721357
+        },
+        "arousal": {
+          "mean": 0.32432183908045975,
+          "population_stddev": 0.3009390473380112
+        },
+        "dominance": {
+          "mean": 0.25717241379310346,
+          "population_stddev": 0.32151374032226476
+        }
+      }
+    },
+    "vad_scores_2": {
+      "count": 435,
+      "dimensions": {
+        "valence": {
+          "mean": 0.3115402298850575,
+          "population_stddev": 0.4561731573985712
+        },
+        "arousal": {
+          "mean": 0.3238620689655172,
+          "population_stddev": 0.3012514576647633
+        },
+        "dominance": {
+          "mean": 0.25804597701149423,
+          "population_stddev": 0.3232281109050045
+        }
+      }
+    },
+    "vad_scores_3": {
+      "count": 435,
+      "dimensions": {
+        "valence": {
+          "mean": 0.3118390804597701,
+          "population_stddev": 0.4570090890105304
+        },
+        "arousal": {
+          "mean": 0.32452873563218393,
+          "population_stddev": 0.2973444861219676
+        },
+        "dominance": {
+          "mean": 0.2622528735632184,
+          "population_stddev": 0.3218216547006608
+        }
+      }
+    }
+  },
+  "within_turn_comparisons": {
+    "valence": {
+      "mean_within_turn_population_stddev": 0.005115009972721079,
+      "mean_within_turn_range": 0.010850574712643677,
+      "max_within_turn_range": 0.45,
+      "pairwise_mean_absolute_difference": {
+        "vad_scores_1_vs_vad_scores_2": 0.007034482758620689,
+        "vad_scores_1_vs_vad_scores_3": 0.007793103448275862,
+        "vad_scores_2_vs_vad_scores_3": 0.006873563218390804
+      }
+    },
+    "arousal": {
+      "mean_within_turn_population_stddev": 0.008431096946561441,
+      "mean_within_turn_range": 0.017885057471264367,
+      "max_within_turn_range": 0.5,
+      "pairwise_mean_absolute_difference": {
+        "vad_scores_1_vs_vad_scores_2": 0.00974712643678161,
+        "vad_scores_1_vs_vad_scores_3": 0.012988505747126436,
+        "vad_scores_2_vs_vad_scores_3": 0.01303448275862069
+      }
+    },
+    "dominance": {
+      "mean_within_turn_population_stddev": 0.014597284816218843,
+      "mean_within_turn_range": 0.03096551724137931,
+      "max_within_turn_range": 0.8,
+      "pairwise_mean_absolute_difference": {
+        "vad_scores_1_vs_vad_scores_2": 0.02096551724137931,
+        "vad_scores_1_vs_vad_scores_3": 0.021954022988505746,
+        "vad_scores_2_vs_vad_scores_3": 0.019011494252873563
+      }
+    }
+  },
+  "conversations": 56,
+  "scope": "Messages through the first qualifying target in each sampled conversation"
+}

@@ -113,6 +113,64 @@ histogram paths.
 
 ## VAD stability
 
+### Representative sample workflow
+
+After producing the selected train, valid, and test files, run the following
+separate stages from the repository root:
+
+```bash
+python -m src.scripts.stability_sample sample
+python -m src.scripts.stability_sample score
+python -m src.scripts.stability_sample report
+```
+
+`sample` writes `data/vad_stability/stability_dataset.json`. It uses the
+analysis eligibility criteria: a target at turn 5 or later with one valid
+earlier cause whose utterance is non-empty. It picks the first qualifying target
+for each conversation and updates `target_turn` and `golden_turn` accordingly.
+The sample is 10% of eligible conversations, rounded to the nearest integer
+with halves rounded up. It is stratified by split and the normalized emotion
+of the first target; largest-remainder allocation approximates each stratum's
+proportion, so rare strata may receive no samples. Sampling uses seed 42 by
+default; `--seed` changes it. Conversations retain all their turns; old VAD
+fields are removed from the sample. The command refuses to overwrite an existing
+sample. Use `--data-dir` and `--output` to select other locations.
+
+`score` writes `data/vad_stability/stability_dataset_embedded.json` with
+`vad_scores_1`, `vad_scores_2`, and `vad_scores_3` generated for each turn
+through the first qualifying target, including preceding retrieval candidates.
+Turns after the target are not scored. This produces VAD scores only, not
+semantic embeddings. The command uses the same Gemini settings and validation
+as the embedding workflow. It checkpoints and resumes missing scores; an
+existing output must match the sample. Use `--overwrite` to clear and regenerate
+all scores, `--checkpoint-interval` to change the default of 50 scores, or
+`--max-retries` to change the retry limit. Requests run concurrently, up to 10
+at a time by default; use `--concurrent-requests` to adjust the limit (or set it
+to 1 for sequential requests). If a request fails after retries, completed
+results are checkpointed and the command exits; rerun to resume. After interrupting an overwrite,
+resume without `--overwrite` to preserve completed scores. A fresh run makes
+three API calls per prefix message and may incur costs.
+
+`report` writes `data/vad_stability/stability_sample_report.json` using only
+the scored prefix messages. It requires all three scores on every included
+message and reports each run's per-dimension mean and population standard
+deviation, plus per-message comparisons including mean within-message standard
+deviation. Use `--input` and `--output` to choose paths for `score` or `report`.
+The fixed decoding seed improves reproducibility but does not guarantee
+identical responses; the three calls are repetitions with the same settings,
+not independent random seeds.
+
+To check one real VAD call without a dataset, run:
+
+```bash
+python -m src.scripts.test_vad_call
+```
+
+It uses a built-in sample utterance and the same model, prompt, and validation
+as the stability scoring stage. It makes one API request and surfaces failures.
+
+### Full-split workflow
+
 After producing the selected split files, generate three independent VAD
 responses for every message in every split:
 
